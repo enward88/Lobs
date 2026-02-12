@@ -1,0 +1,19 @@
+{
+  "name": "@lobs/sdk",
+  "version": "0.1.0",
+  "description": "TypeScript SDK for the Lobs on-chain pet game",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@coral-xyz/anchor": "^0.30.1",
+    "@solana/web3.js": "^1.95.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.0"
+  }
+}

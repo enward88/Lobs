@@ -1,0 +1,28 @@
+{
+  "name": "lobs",
+  "version": "0.1.0",
+  "description": "On-chain pet collection game on Solana",
+  "license": "MIT",
+  "private": true,
+  "workspaces": [
+    "sdk",
+    "app"
+  ],
+  "scripts": {
+    "build:program": "anchor build",
+    "test": "anchor test",
+    "build:sdk": "cd sdk && npm run build",
+    "build:app": "cd app && npm run build",
+    "dev:app": "cd app && npm run dev"
+  },
+  "devDependencies": {
+    "@coral-xyz/anchor": "^0.30.1",
+    "@solana/web3.js": "^1.95.0",
+    "chai": "^4.3.7",
+    "mocha": "^10.2.0",
+    "ts-mocha": "^10.0.0",
+    "typescript": "^5.3.0",
+    "@types/chai": "^4.3.0",
+    "@types/mocha": "^10.0.0"
+  }
+}

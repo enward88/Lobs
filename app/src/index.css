@@ -1,0 +1,14 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: "Space Grotesk", system-ui, sans-serif;
+  min-height: 100vh;
+}
+
+@layer base {
+  :root {
+    --color-accent: #5a6ef3;
+  }
+}
