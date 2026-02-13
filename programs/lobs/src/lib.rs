@@ -28,7 +28,7 @@ pub mod lobs {
         instructions::feed::handler(ctx)
     }
 
-    /// Battle another agent's Lob. On-chain deterministic resolution.
+    /// Battle another agent's Lob. Free, no wager.
     pub fn battle(ctx: Context<Battle>) -> Result<()> {
         instructions::battle::handler(ctx)
     }
@@ -36,5 +36,19 @@ pub mod lobs {
     /// Evolve a Lob to the next stage when XP threshold is met.
     pub fn evolve_lob(ctx: Context<EvolveLob>) -> Result<()> {
         instructions::evolve::handler(ctx)
+    }
+
+    /// Create a wager battle challenge. Stakes SOL in escrow.
+    pub fn create_challenge(
+        ctx: Context<CreateChallenge>,
+        wager: u64,
+        defender_lob: Option<Pubkey>,
+    ) -> Result<()> {
+        instructions::create_challenge::handler(ctx, wager, defender_lob)
+    }
+
+    /// Accept a wager challenge. Matches the stake, resolves battle, pays winner.
+    pub fn accept_challenge(ctx: Context<AcceptChallenge>) -> Result<()> {
+        instructions::accept_challenge::handler(ctx)
     }
 }

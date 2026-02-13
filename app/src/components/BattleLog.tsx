@@ -1,109 +1,92 @@
 import { useLobs, LobAccount } from "../hooks/useLobs";
-import { SPECIES_EMOJI } from "../lib/program";
+import { CreatureDot } from "./CreatureArt";
+import { SPECIES_NAME } from "../lib/program";
 
 export function BattleLog() {
-  const { lobs, loading, error } = useLobs();
+  const { lobs, loading } = useLobs();
 
   if (loading) {
     return (
-      <div className="text-center py-20 text-abyss-400 animate-pulse">
-        Loading battle data...
+      <div className="flex flex-col items-center py-32">
+        <div className="w-12 h-12 rounded-full border-2 border-abyss-700/30 border-t-biolume-pink/60 animate-spin" />
+        <p className="text-abyss-400 text-sm mt-6 tracking-wider uppercase">Loading arena data...</p>
       </div>
     );
   }
 
-  if (error) {
-    return <div className="text-center py-20 text-red-400">{error}</div>;
-  }
-
-  // Show lobs that have battle history, sorted by total battles
-  const battlers = lobs
+  const battlers = [...lobs]
     .filter((l) => l.battlesWon + l.battlesLost > 0)
     .sort((a, b) => b.battlesWon + b.battlesLost - (a.battlesWon + a.battlesLost));
 
-  const totalBattles = lobs.reduce(
-    (sum, l) => sum + l.battlesWon + l.battlesLost,
-    0
-  );
+  const totalBattles = lobs.reduce((sum, l) => sum + l.battlesWon + l.battlesLost, 0);
+
+  // Find top stats
+  const mostWins = battlers.length > 0 ? battlers.reduce((a, b) => a.battlesWon > b.battlesWon ? a : b) : null;
+  const mostActive = battlers.length > 0 ? battlers[0] : null;
+  const bestRate = [...battlers]
+    .filter((l) => l.battlesWon + l.battlesLost >= 3)
+    .sort((a, b) =>
+      b.battlesWon / (b.battlesWon + b.battlesLost) -
+      a.battlesWon / (a.battlesWon + a.battlesLost)
+    )[0] || null;
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Battle History</h1>
-        <span className="text-abyss-400 text-sm">
-          {Math.floor(totalBattles / 2)} total battles
-        </span>
+      <div className="flex items-end justify-between mb-8">
+        <div>
+          <h1
+            className="text-3xl font-bold tracking-tight"
+            style={{
+              background: "linear-gradient(135deg, #c5e4ed, #ff00aa)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+            }}
+          >
+            Arena
+          </h1>
+          <p className="text-abyss-400 text-sm mt-1">
+            {Math.floor(totalBattles / 2)} battles fought in the deep
+          </p>
+        </div>
       </div>
 
-      {/* Stats overview */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-        <StatCard
+      {/* Stat cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+        <HeroCard
           label="Most Victorious"
-          lob={battlers[0]}
-          stat={battlers[0]?.battlesWon ?? 0}
-          unit="wins"
+          lob={mostWins}
+          stat={mostWins ? `${mostWins.battlesWon} wins` : null}
+          accent="#00ffd5"
         />
-        <StatCard
+        <HeroCard
           label="Most Active"
-          lob={
-            battlers.sort(
-              (a, b) =>
-                b.battlesWon + b.battlesLost - (a.battlesWon + a.battlesLost)
-            )[0]
-          }
-          stat={
-            battlers[0]
-              ? battlers[0].battlesWon + battlers[0].battlesLost
-              : 0
-          }
-          unit="battles"
+          lob={mostActive}
+          stat={mostActive ? `${mostActive.battlesWon + mostActive.battlesLost} battles` : null}
+          accent="#00aaff"
         />
-        <StatCard
-          label="Highest Win Rate"
-          lob={
-            [...battlers]
-              .filter((l) => l.battlesWon + l.battlesLost >= 3)
-              .sort(
-                (a, b) =>
-                  b.battlesWon / (b.battlesWon + b.battlesLost) -
-                  a.battlesWon / (a.battlesWon + a.battlesLost)
-              )[0]
-          }
-          stat={
-            (() => {
-              const top = [...battlers]
-                .filter((l) => l.battlesWon + l.battlesLost >= 3)
-                .sort(
-                  (a, b) =>
-                    b.battlesWon / (b.battlesWon + b.battlesLost) -
-                    a.battlesWon / (a.battlesWon + a.battlesLost)
-                )[0];
-              return top
-                ? Math.round(
-                    (top.battlesWon / (top.battlesWon + top.battlesLost)) * 100
-                  )
-                : 0;
-            })()
-          }
-          unit="%"
+        <HeroCard
+          label="Best Win Rate"
+          lob={bestRate}
+          stat={bestRate ? `${Math.round((bestRate.battlesWon / (bestRate.battlesWon + bestRate.battlesLost)) * 100)}%` : null}
+          accent="#aa55ff"
         />
       </div>
 
       {battlers.length === 0 ? (
-        <div className="text-center py-20 text-abyss-400">
-          <div className="text-4xl mb-4">⚔️</div>
-          <p>No battles yet. The arena awaits...</p>
+        <div className="text-center py-16">
+          <p className="text-abyss-500 tracking-wider uppercase text-sm mb-2">The arena is silent</p>
+          <p className="text-abyss-600 text-xs">No battles have been fought yet</p>
         </div>
       ) : (
-        <div className="bg-abyss-900/60 border border-abyss-800 rounded-xl overflow-hidden">
-          <div className="px-4 py-3 border-b border-abyss-800">
-            <h2 className="text-sm font-medium text-abyss-300">
+        <div className="rounded-2xl bg-abyss-900/30 border border-abyss-700/15 overflow-hidden glow-border">
+          <div className="px-5 py-3 border-b border-abyss-700/20">
+            <span className="text-[10px] text-abyss-500 uppercase tracking-wider font-medium">
               Battle Records
-            </h2>
+            </span>
           </div>
-          <div className="divide-y divide-abyss-800/50">
+          <div className="divide-y divide-abyss-700/10">
             {battlers.map((lob) => (
-              <BattlerRow key={lob.address.toString()} lob={lob} />
+              <BattlerRow key={lob.address} lob={lob} />
             ))}
           </div>
         </div>
@@ -112,37 +95,37 @@ export function BattleLog() {
   );
 }
 
-function StatCard({
+function HeroCard({
   label,
   lob,
   stat,
-  unit,
+  accent,
 }: {
   label: string;
-  lob?: LobAccount;
-  stat: number;
-  unit: string;
+  lob: LobAccount | null;
+  stat: string | null;
+  accent: string;
 }) {
   if (!lob) {
     return (
-      <div className="bg-abyss-900/60 border border-abyss-800 rounded-xl p-4 text-center text-abyss-500">
-        No data yet
+      <div className="p-5 rounded-2xl bg-abyss-900/30 border border-abyss-700/15 text-center">
+        <span className="text-[10px] text-abyss-500 uppercase tracking-wider">{label}</span>
+        <p className="text-abyss-600 text-xs mt-2">No data yet</p>
       </div>
     );
   }
 
-  const emoji = SPECIES_EMOJI[lob.species] || "❓";
-
   return (
-    <div className="bg-abyss-900/60 border border-abyss-800 rounded-xl p-4">
-      <div className="text-xs text-abyss-500 uppercase mb-2">{label}</div>
-      <div className="flex items-center gap-2">
-        <span className="text-2xl">{emoji}</span>
+    <div
+      className="p-5 rounded-2xl bg-abyss-900/30 border border-abyss-700/15 hover-glow transition-all duration-300"
+      style={{ boxShadow: `inset 0 1px 0 0 ${accent}22` }}
+    >
+      <span className="text-[10px] text-abyss-500 uppercase tracking-wider">{label}</span>
+      <div className="flex items-center gap-2.5 mt-2">
+        <CreatureDot species={lob.species} />
         <div>
-          <div className="font-semibold">{lob.name}</div>
-          <div className="text-sm text-abyss-400">
-            {stat} {unit}
-          </div>
+          <div className="font-semibold text-white text-sm">{lob.name}</div>
+          <div className="text-xs font-mono" style={{ color: accent }}>{stat}</div>
         </div>
       </div>
     </div>
@@ -150,33 +133,31 @@ function StatCard({
 }
 
 function BattlerRow({ lob }: { lob: LobAccount }) {
-  const emoji = SPECIES_EMOJI[lob.species] || "❓";
+  const speciesName = SPECIES_NAME[lob.species] || "?";
   const total = lob.battlesWon + lob.battlesLost;
   const winRate = total > 0 ? ((lob.battlesWon / total) * 100).toFixed(0) : "0";
 
   return (
-    <div className="flex items-center justify-between px-4 py-3">
+    <div className="flex items-center justify-between px-5 py-3 hover:bg-abyss-800/15 transition-colors duration-200">
       <div className="flex items-center gap-3">
-        <span className="text-2xl">{emoji}</span>
+        <CreatureDot species={lob.species} />
         <div>
-          <div className="font-medium text-sm">{lob.name}</div>
-          <div className="text-xs text-abyss-500">
-            {lob.owner.toString().slice(0, 8)}...
-          </div>
+          <div className="font-medium text-sm text-white">{lob.name}</div>
+          <div className="text-[10px] text-abyss-500">{speciesName} &middot; {lob.owner.slice(0, 8)}...</div>
         </div>
       </div>
-      <div className="flex items-center gap-6 text-sm">
+      <div className="flex items-center gap-6">
         <div className="text-center">
-          <div className="text-green-400 font-medium">{lob.battlesWon}</div>
-          <div className="text-[10px] text-abyss-500">WINS</div>
+          <div className="text-sm font-mono font-semibold text-green-400">{lob.battlesWon}</div>
+          <div className="text-[9px] text-abyss-600 uppercase tracking-wider">W</div>
         </div>
         <div className="text-center">
-          <div className="text-red-400 font-medium">{lob.battlesLost}</div>
-          <div className="text-[10px] text-abyss-500">LOSSES</div>
+          <div className="text-sm font-mono font-semibold text-red-400">{lob.battlesLost}</div>
+          <div className="text-[9px] text-abyss-600 uppercase tracking-wider">L</div>
         </div>
-        <div className="text-center min-w-[40px]">
-          <div className="text-abyss-300 font-medium">{winRate}%</div>
-          <div className="text-[10px] text-abyss-500">RATE</div>
+        <div className="text-center min-w-[36px]">
+          <div className="text-sm font-mono font-semibold text-abyss-300">{winRate}%</div>
+          <div className="text-[9px] text-abyss-600 uppercase tracking-wider">Rate</div>
         </div>
       </div>
     </div>

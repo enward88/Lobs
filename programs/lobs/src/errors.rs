@@ -25,4 +25,16 @@ pub enum LobsError {
 
     #[msg("Invalid species value")]
     InvalidSpecies,
+
+    #[msg("Wager below minimum (0.01 SOL)")]
+    WagerTooLow,
+
+    #[msg("Wager above maximum (10 SOL)")]
+    WagerTooHigh,
+
+    #[msg("Challenge is no longer active")]
+    ChallengeInactive,
+
+    #[msg("Wrong defender lob for this challenge")]
+    WrongDefender,
 }

@@ -2,13 +2,111 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --bg-deep: #020a0f;
+  --bg-mid: #061520;
+  --glow-cyan: #00ffd5;
+  --glow-blue: #00aaff;
+  --glow-pink: #ff00aa;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #163f54 transparent;
+}
+
 body {
   font-family: "Space Grotesk", system-ui, sans-serif;
   min-height: 100vh;
+  background: var(--bg-deep);
+  color: #c5e4ed;
+  overflow-x: hidden;
 }
 
-@layer base {
-  :root {
-    --color-accent: #5a6ef3;
+/* Underwater background layers */
+#root {
+  position: relative;
+  min-height: 100vh;
+  background:
+    radial-gradient(ellipse 80% 50% at 20% 80%, rgba(0, 170, 255, 0.03) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 80% 20%, rgba(0, 255, 213, 0.02) 0%, transparent 50%),
+    radial-gradient(ellipse 90% 60% at 50% 100%, rgba(170, 85, 255, 0.02) 0%, transparent 40%),
+    linear-gradient(180deg, #020a0f 0%, #061520 40%, #081a26 100%);
+}
+
+/* Bioluminescent glow effect for cards */
+@layer utilities {
+  .glow-border {
+    position: relative;
   }
+  .glow-border::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+      135deg,
+      rgba(0, 255, 213, 0.15),
+      rgba(0, 170, 255, 0.08),
+      rgba(170, 85, 255, 0.12),
+      transparent
+    );
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+}
+
+/* Stat bar gradient fills */
+.stat-str {
+  background: linear-gradient(90deg, #ff3355, #ff6644);
+}
+.stat-vit {
+  background: linear-gradient(90deg, #00cc66, #00ff88);
+}
+.stat-spd {
+  background: linear-gradient(90deg, #0088ff, #00ccff);
+}
+.stat-mood-high {
+  background: linear-gradient(90deg, #00cc66, #00ffd5);
+}
+.stat-mood-mid {
+  background: linear-gradient(90deg, #ccaa00, #ffcc00);
+}
+.stat-mood-low {
+  background: linear-gradient(90deg, #cc3344, #ff4466);
+}
+.stat-xp {
+  background: linear-gradient(90deg, #aa55ff, #cc88ff);
+}
+
+/* Creature ASCII art glow */
+.creature-glow {
+  text-shadow:
+    0 0 8px currentColor,
+    0 0 20px currentColor;
+}
+
+/* Link/button hover glow */
+.hover-glow {
+  transition: all 0.3s ease;
+}
+.hover-glow:hover {
+  box-shadow:
+    0 0 12px rgba(0, 255, 213, 0.1),
+    0 0 30px rgba(0, 170, 255, 0.05);
+}
+
+/* Subtle noise texture overlay */
+#root::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  opacity: 0.015;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 9999;
 }

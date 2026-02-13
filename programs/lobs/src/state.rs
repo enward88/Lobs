@@ -9,6 +9,10 @@ pub struct GameConfig {
     pub authority: Pubkey,
     /// Total lobs minted across all players
     pub total_lobs_minted: u64,
+    /// Total wager battles completed
+    pub total_wager_battles: u64,
+    /// Total SOL wagered (lamports)
+    pub total_sol_wagered: u64,
     /// Bump seed for PDA
     pub bump: u8,
     /// Treasury bump seed
@@ -23,7 +27,7 @@ pub struct Lob {
     /// Lob name
     #[max_len(32)]
     pub name: String,
-    /// Species type (0-5)
+    /// Species type (0-29)
     pub species: u8,
     /// Current XP
     pub xp: u32,
@@ -47,35 +51,54 @@ pub struct Lob {
     pub is_alive: bool,
     /// Mint index for this owner (used in PDA derivation)
     pub mint_index: u64,
+    /// Total SOL won from wagers (lamports)
+    pub sol_won: u64,
+    /// Total SOL lost from wagers (lamports)
+    pub sol_lost: u64,
     /// Bump seed for PDA
     pub bump: u8,
 }
 
+/// A pending wager battle challenge. Challenger stakes SOL,
+/// defender accepts to match and trigger the fight.
+#[account]
+#[derive(InitSpace)]
+pub struct BattleChallenge {
+    /// Who issued the challenge
+    pub challenger: Pubkey,
+    /// The challenger's lob
+    pub challenger_lob: Pubkey,
+    /// The target defender's lob (or Pubkey::default for open challenge)
+    pub defender_lob: Pubkey,
+    /// Wager amount in lamports (each side puts up this amount)
+    pub wager: u64,
+    /// When the challenge was created
+    pub created_at: i64,
+    /// Whether the challenge is still active
+    pub is_active: bool,
+    /// Bump seed
+    pub bump: u8,
+}
+
 impl Lob {
-    /// Calculate effective stat with evolution multiplier and mood modifier
     pub fn effective_strength(&self) -> u64 {
         let multiplier = EVOLUTION_MULTIPLIERS[self.evolution_stage as usize] as u64;
         let base = self.strength as u64;
         let mood_factor = self.mood as u64;
-        // (base * multiplier * mood) / (10000 * 100)
         base.checked_mul(multiplier)
             .and_then(|v| v.checked_mul(mood_factor))
             .map(|v| v / 1_000_000)
             .unwrap_or(0)
     }
 
-    /// Calculate effective vitality (HP) with evolution multiplier
     pub fn effective_vitality(&self) -> u64 {
         let multiplier = EVOLUTION_MULTIPLIERS[self.evolution_stage as usize] as u64;
         let base = self.vitality as u64;
-        // (base * multiplier) / 10000
-        // Scale up by 10 for more granular HP
         base.checked_mul(multiplier)
             .map(|v| v * 10 / 10000)
             .unwrap_or(0)
     }
 
-    /// Calculate effective speed with evolution multiplier
     pub fn effective_speed(&self) -> u64 {
         let multiplier = EVOLUTION_MULTIPLIERS[self.evolution_stage as usize] as u64;
         let base = self.speed as u64;
@@ -84,7 +107,6 @@ impl Lob {
             .unwrap_or(0)
     }
 
-    /// Get current evolution level name
     pub fn stage_name(&self) -> &str {
         match self.evolution_stage {
             0 => "Larva",
@@ -95,15 +117,32 @@ impl Lob {
         }
     }
 
-    /// Get species name
     pub fn species_name(&self) -> &str {
         match self.species {
-            0 => "Snapclaw",
-            1 => "Shellback",
-            2 => "Reefling",
-            3 => "Tidecrawler",
-            4 => "Deepmaw",
-            5 => "Driftbloom",
+            0 => "Snapclaw", 1 => "Tidecrawler", 2 => "Ironpincer",
+            3 => "Razorshrimp", 4 => "Boulderclaw",
+            5 => "Inkshade", 6 => "Coilshell", 7 => "Pearlmouth",
+            8 => "Spiralhorn", 9 => "Venomcone",
+            10 => "Driftbloom", 11 => "Stormbell", 12 => "Ghostveil",
+            13 => "Warbloom", 14 => "Moonpulse",
+            15 => "Deepmaw", 16 => "Flashfin", 17 => "Gulpjaw",
+            18 => "Mirrorfin", 19 => "Stonescale",
+            20 => "Reefling", 21 => "Thorncoil", 22 => "Bloomsire",
+            23 => "Tendrilwrap", 24 => "Sporeling",
+            25 => "Voidmaw", 26 => "Pressureking", 27 => "Darkdrifter",
+            28 => "Abysswatcher", 29 => "Depthcrown",
+            _ => "Unknown",
+        }
+    }
+
+    pub fn family_name(&self) -> &str {
+        match self.species {
+            0..=4 => "Crustacean",
+            5..=9 => "Mollusk",
+            10..=14 => "Jellyfish",
+            15..=19 => "Fish",
+            20..=24 => "Flora",
+            25..=29 => "Abyssal",
             _ => "Unknown",
         }
     }

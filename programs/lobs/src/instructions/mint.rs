@@ -125,14 +125,22 @@ fn generate_stats(species: u8, seed: &[u8; 32]) -> (u8, u8, u8) {
     let raw_vit = BASE_STAT_MIN + (seed[2] % BASE_STAT_RANGE);
     let raw_spd = BASE_STAT_MIN + (seed[3] % BASE_STAT_RANGE);
 
-    // Apply species bonuses
-    match species {
-        0 => (raw_str.saturating_add(3), raw_vit, raw_spd),                    // Snapclaw: +STR
-        1 => (raw_str, raw_vit.saturating_add(3), raw_spd),                    // Shellback: +VIT
-        2 => (raw_str.saturating_add(1), raw_vit.saturating_add(1), raw_spd.saturating_add(1)), // Reefling: balanced
-        3 => (raw_str, raw_vit, raw_spd.saturating_add(3)),                    // Tidecrawler: +SPD
-        4 => (raw_str.saturating_add(4), raw_vit, raw_spd.saturating_sub(2)),  // Deepmaw: +STR, -SPD
-        5 => (raw_str, raw_vit.saturating_sub(2), raw_spd.saturating_add(4)),  // Driftbloom: +SPD, -VIT
-        _ => (raw_str, raw_vit, raw_spd),
+    // Apply species bonuses from the lookup table
+    if (species as usize) < SPECIES_BONUSES.len() {
+        let (s_bonus, v_bonus, sp_bonus) = SPECIES_BONUSES[species as usize];
+        let strength = apply_bonus(raw_str, s_bonus);
+        let vitality = apply_bonus(raw_vit, v_bonus);
+        let speed = apply_bonus(raw_spd, sp_bonus);
+        (strength, vitality, speed)
+    } else {
+        (raw_str, raw_vit, raw_spd)
+    }
+}
+
+fn apply_bonus(base: u8, bonus: i8) -> u8 {
+    if bonus >= 0 {
+        base.saturating_add(bonus as u8)
+    } else {
+        base.saturating_sub(bonus.unsigned_abs())
     }
 }

@@ -1,16 +1,54 @@
 import { PublicKey } from "@solana/web3.js";
 
-/** Species type IDs */
+/** All 30 species, organized by family */
 export enum Species {
+  // Crustaceans
   Snapclaw = 0,
-  Shellback = 1,
-  Reefling = 2,
-  Tidecrawler = 3,
-  Deepmaw = 4,
-  Driftbloom = 5,
+  Tidecrawler = 1,
+  Ironpincer = 2,
+  Razorshrimp = 3,
+  Boulderclaw = 4,
+  // Mollusks
+  Inkshade = 5,
+  Coilshell = 6,
+  Pearlmouth = 7,
+  Spiralhorn = 8,
+  Venomcone = 9,
+  // Jellyfish
+  Driftbloom = 10,
+  Stormbell = 11,
+  Ghostveil = 12,
+  Warbloom = 13,
+  Moonpulse = 14,
+  // Fish
+  Deepmaw = 15,
+  Flashfin = 16,
+  Gulpjaw = 17,
+  Mirrorfin = 18,
+  Stonescale = 19,
+  // Coral/Flora
+  Reefling = 20,
+  Thorncoil = 21,
+  Bloomsire = 22,
+  Tendrilwrap = 23,
+  Sporeling = 24,
+  // Abyssal
+  Voidmaw = 25,
+  Pressureking = 26,
+  Darkdrifter = 27,
+  Abysswatcher = 28,
+  Depthcrown = 29,
 }
 
-/** Evolution stages */
+export enum Family {
+  Crustacean = "Crustacean",
+  Mollusk = "Mollusk",
+  Jellyfish = "Jellyfish",
+  Fish = "Fish",
+  Flora = "Flora",
+  Abyssal = "Abyssal",
+}
+
 export enum EvolutionStage {
   Larva = 0,
   Juvenile = 1,
@@ -18,44 +56,46 @@ export enum EvolutionStage {
   Elder = 3,
 }
 
-/** Species metadata */
-export const SPECIES_INFO: Record<
-  Species,
-  { name: string; trait: string; emoji: string }
-> = {
-  [Species.Snapclaw]: {
-    name: "Snapclaw",
-    trait: "Aggressive crustacean",
-    emoji: "🦞",
-  },
-  [Species.Shellback]: {
-    name: "Shellback",
-    trait: "Armored turtle",
-    emoji: "🐢",
-  },
-  [Species.Reefling]: {
-    name: "Reefling",
-    trait: "Coral symbiote",
-    emoji: "🪸",
-  },
-  [Species.Tidecrawler]: {
-    name: "Tidecrawler",
-    trait: "Swift crab",
-    emoji: "🦀",
-  },
-  [Species.Deepmaw]: {
-    name: "Deepmaw",
-    trait: "Abyssal predator",
-    emoji: "🐡",
-  },
-  [Species.Driftbloom]: {
-    name: "Driftbloom",
-    trait: "Ethereal jellyfish",
-    emoji: "🪼",
-  },
+export interface SpeciesInfo {
+  name: string;
+  family: Family;
+  trait: string;
+  bonuses: { str: number; vit: number; spd: number };
+}
+
+export const SPECIES_INFO: Record<Species, SpeciesInfo> = {
+  [Species.Snapclaw]:     { name: "Snapclaw",     family: Family.Crustacean, trait: "Aggressive lobster",   bonuses: { str: 3, vit: 0, spd: 0 } },
+  [Species.Tidecrawler]:  { name: "Tidecrawler",  family: Family.Crustacean, trait: "Swift crab",           bonuses: { str: 0, vit: 0, spd: 3 } },
+  [Species.Ironpincer]:   { name: "Ironpincer",   family: Family.Crustacean, trait: "Armored crab",         bonuses: { str: 0, vit: 3, spd: 0 } },
+  [Species.Razorshrimp]:  { name: "Razorshrimp",  family: Family.Crustacean, trait: "Glass shrimp",         bonuses: { str: 2, vit: -1, spd: 2 } },
+  [Species.Boulderclaw]:  { name: "Boulderclaw",  family: Family.Crustacean, trait: "Giant isopod",         bonuses: { str: 0, vit: 4, spd: -2 } },
+  [Species.Inkshade]:     { name: "Inkshade",     family: Family.Mollusk,    trait: "Octopus",              bonuses: { str: 2, vit: 0, spd: 2 } },
+  [Species.Coilshell]:    { name: "Coilshell",    family: Family.Mollusk,    trait: "Nautilus",             bonuses: { str: 0, vit: 3, spd: 0 } },
+  [Species.Pearlmouth]:   { name: "Pearlmouth",   family: Family.Mollusk,    trait: "Giant clam",           bonuses: { str: 0, vit: 4, spd: -2 } },
+  [Species.Spiralhorn]:   { name: "Spiralhorn",   family: Family.Mollusk,    trait: "Sea snail",            bonuses: { str: -1, vit: 2, spd: 1 } },
+  [Species.Venomcone]:    { name: "Venomcone",    family: Family.Mollusk,    trait: "Cone snail",           bonuses: { str: 3, vit: -2, spd: 0 } },
+  [Species.Driftbloom]:   { name: "Driftbloom",   family: Family.Jellyfish,  trait: "Ethereal jelly",       bonuses: { str: -1, vit: 0, spd: 4 } },
+  [Species.Stormbell]:    { name: "Stormbell",    family: Family.Jellyfish,  trait: "Electric jelly",       bonuses: { str: 3, vit: 0, spd: 0 } },
+  [Species.Ghostveil]:    { name: "Ghostveil",    family: Family.Jellyfish,  trait: "Phantom jelly",        bonuses: { str: 0, vit: -1, spd: 3 } },
+  [Species.Warbloom]:     { name: "Warbloom",     family: Family.Jellyfish,  trait: "War jelly",            bonuses: { str: 2, vit: 2, spd: -1 } },
+  [Species.Moonpulse]:    { name: "Moonpulse",    family: Family.Jellyfish,  trait: "Moon jelly",           bonuses: { str: 1, vit: 1, spd: 1 } },
+  [Species.Deepmaw]:      { name: "Deepmaw",      family: Family.Fish,       trait: "Anglerfish",           bonuses: { str: 4, vit: 0, spd: -2 } },
+  [Species.Flashfin]:     { name: "Flashfin",     family: Family.Fish,       trait: "Lanternfish",          bonuses: { str: 0, vit: 0, spd: 3 } },
+  [Species.Gulpjaw]:      { name: "Gulpjaw",      family: Family.Fish,       trait: "Gulper eel",           bonuses: { str: 3, vit: 0, spd: -1 } },
+  [Species.Mirrorfin]:    { name: "Mirrorfin",    family: Family.Fish,       trait: "Hatchetfish",          bonuses: { str: -1, vit: 0, spd: 3 } },
+  [Species.Stonescale]:   { name: "Stonescale",   family: Family.Fish,       trait: "Coelacanth",           bonuses: { str: 0, vit: 3, spd: 0 } },
+  [Species.Reefling]:     { name: "Reefling",     family: Family.Flora,      trait: "Coral symbiote",       bonuses: { str: 1, vit: 1, spd: 1 } },
+  [Species.Thorncoil]:    { name: "Thorncoil",    family: Family.Flora,      trait: "Thorny coral",         bonuses: { str: 3, vit: 0, spd: -2 } },
+  [Species.Bloomsire]:    { name: "Bloomsire",    family: Family.Flora,      trait: "Anemone",              bonuses: { str: 2, vit: 2, spd: -1 } },
+  [Species.Tendrilwrap]:  { name: "Tendrilwrap",  family: Family.Flora,      trait: "Kelp creature",        bonuses: { str: -2, vit: 3, spd: 0 } },
+  [Species.Sporeling]:    { name: "Sporeling",    family: Family.Flora,      trait: "Deep fungus",          bonuses: { str: 0, vit: 2, spd: 1 } },
+  [Species.Voidmaw]:      { name: "Voidmaw",      family: Family.Abyssal,    trait: "Abyssal predator",     bonuses: { str: 4, vit: 0, spd: -1 } },
+  [Species.Pressureking]: { name: "Pressureking", family: Family.Abyssal,    trait: "Barreleye fish",       bonuses: { str: 0, vit: 2, spd: 2 } },
+  [Species.Darkdrifter]:  { name: "Darkdrifter",  family: Family.Abyssal,    trait: "Sea cucumber",         bonuses: { str: 0, vit: 4, spd: -1 } },
+  [Species.Abysswatcher]: { name: "Abysswatcher", family: Family.Abyssal,    trait: "Giant squid",          bonuses: { str: 2, vit: 0, spd: 2 } },
+  [Species.Depthcrown]:   { name: "Depthcrown",   family: Family.Abyssal,    trait: "Sea dragon",           bonuses: { str: 3, vit: 1, spd: 0 } },
 };
 
-/** Stage display names */
 export const STAGE_NAMES: Record<EvolutionStage, string> = {
   [EvolutionStage.Larva]: "Larva",
   [EvolutionStage.Juvenile]: "Juvenile",
@@ -63,7 +103,6 @@ export const STAGE_NAMES: Record<EvolutionStage, string> = {
   [EvolutionStage.Elder]: "Elder",
 };
 
-/** Evolution XP thresholds */
 export const EVOLUTION_THRESHOLDS = [100, 500, 2000];
 
 /** On-chain Lob account data */
@@ -83,22 +122,39 @@ export interface LobData {
   evolutionStage: EvolutionStage;
   isAlive: boolean;
   mintIndex: number;
+  solWon: number;
+  solLost: number;
   bump: number;
 }
 
-/** On-chain GameConfig data */
 export interface GameConfigData {
   address: PublicKey;
   authority: PublicKey;
   totalLobsMinted: number;
+  totalWagerBattles: number;
+  totalSolWagered: number;
   bump: number;
   treasuryBump: number;
 }
 
-/** Battle result */
 export interface BattleResult {
   txSignature: string;
   challengerWon: boolean;
   challengerLob: PublicKey;
   defenderLob: PublicKey;
+}
+
+export interface ChallengeData {
+  address: PublicKey;
+  challenger: PublicKey;
+  challengerLob: PublicKey;
+  defenderLob: PublicKey;
+  wager: number;
+  createdAt: number;
+  isActive: boolean;
+}
+
+export interface WagerResult extends BattleResult {
+  wager: number;
+  winnings: number;
 }
