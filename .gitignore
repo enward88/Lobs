@@ -9,3 +9,4 @@ target/
 test-ledger/
 app/dist/
 sdk/dist/
+video/out/
