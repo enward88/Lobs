@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program::sysvar::slot_hashes;
-use anchor_spl::token::{self, Token, TokenAccount, Transfer};
+use anchor_spl::token::{self, Burn, Mint, Token, TokenAccount, Transfer};
 
 use crate::constants::*;
 use crate::errors::LobsError;
@@ -39,7 +39,7 @@ pub struct AcceptChallenge<'info> {
     )]
     pub defender_lob: Account<'info, Lob>,
 
-    /// CHECK: Treasury PDA — signer for token transfers out
+    /// CHECK: Treasury PDA — signer for token transfers and burns
     #[account(
         seeds = [TREASURY_SEED],
         bump = config.treasury_bump,
@@ -68,6 +68,13 @@ pub struct AcceptChallenge<'info> {
         constraint = challenger_token_account.mint == config.token_mint,
     )]
     pub challenger_token_account: Account<'info, TokenAccount>,
+
+    /// $LOBS token mint (required for burning the arena fee)
+    #[account(
+        mut,
+        constraint = token_mint.key() == config.token_mint,
+    )]
+    pub token_mint: Account<'info, Mint>,
 
     /// CHECK: SlotHashes sysvar for tiebreaker
     #[account(address = slot_hashes::id())]
@@ -145,7 +152,7 @@ pub fn handler(ctx: Context<AcceptChallenge>) -> Result<()> {
 
     drop(slot_hashes_data);
 
-    // === Distribute wager via SPL token transfer ===
+    // === Distribute wager ===
     let total_pot = wager.checked_mul(2).ok_or(LobsError::Overflow)?;
     let fee = total_pot
         .checked_mul(WAGER_FEE_BPS)
@@ -153,7 +160,7 @@ pub fn handler(ctx: Context<AcceptChallenge>) -> Result<()> {
         / 10000;
     let winnings = total_pot.checked_sub(fee).ok_or(LobsError::Overflow)?;
 
-    // Treasury PDA signs the transfer out
+    // Treasury PDA signs transfers and burns
     let treasury_bump = ctx.accounts.config.treasury_bump;
     let treasury_seeds: &[&[&[u8]]] = &[&[TREASURY_SEED, &[treasury_bump]]];
 
@@ -163,6 +170,7 @@ pub fn handler(ctx: Context<AcceptChallenge>) -> Result<()> {
         ctx.accounts.defender_token_account.to_account_info()
     };
 
+    // Transfer winnings to the winner
     token::transfer(
         CpiContext::new_with_signer(
             ctx.accounts.token_program.to_account_info(),
@@ -174,6 +182,20 @@ pub fn handler(ctx: Context<AcceptChallenge>) -> Result<()> {
             treasury_seeds,
         ),
         winnings,
+    )?;
+
+    // Burn the 2.5% arena fee permanently — reduces total supply
+    token::burn(
+        CpiContext::new_with_signer(
+            ctx.accounts.token_program.to_account_info(),
+            Burn {
+                from: ctx.accounts.treasury_token_account.to_account_info(),
+                mint: ctx.accounts.token_mint.to_account_info(),
+                authority: ctx.accounts.treasury.to_account_info(),
+            },
+            treasury_seeds,
+        ),
+        fee,
     )?;
 
     // === Update lob stats ===
@@ -190,7 +212,7 @@ pub fn handler(ctx: Context<AcceptChallenge>) -> Result<()> {
         defender_lob.battles_lost = defender_lob.battles_lost.checked_add(1).ok_or(LobsError::Overflow)?;
         defender_lob.tokens_lost = defender_lob.tokens_lost.checked_add(wager).ok_or(LobsError::Overflow)?;
 
-        msg!("Wager battle: {} defeated {}! Won {} $LOBS", challenger_lob.name, defender_lob.name, winnings);
+        msg!("Wager battle: {} defeated {}! Won {} $LOBS ({} burned)", challenger_lob.name, defender_lob.name, winnings, fee);
     } else {
         defender_lob.xp = defender_lob.xp.checked_add(BATTLE_WIN_XP).ok_or(LobsError::Overflow)?;
         defender_lob.mood = defender_lob.mood.saturating_add(BATTLE_WIN_MOOD).min(MAX_MOOD);
@@ -201,13 +223,14 @@ pub fn handler(ctx: Context<AcceptChallenge>) -> Result<()> {
         challenger_lob.battles_lost = challenger_lob.battles_lost.checked_add(1).ok_or(LobsError::Overflow)?;
         challenger_lob.tokens_lost = challenger_lob.tokens_lost.checked_add(wager).ok_or(LobsError::Overflow)?;
 
-        msg!("Wager battle: {} defeated {}! Won {} $LOBS", defender_lob.name, challenger_lob.name, winnings);
+        msg!("Wager battle: {} defeated {}! Won {} $LOBS ({} burned)", defender_lob.name, challenger_lob.name, winnings, fee);
     }
 
     // Update config stats
     let config = &mut ctx.accounts.config;
     config.total_wager_battles = config.total_wager_battles.checked_add(1).ok_or(LobsError::Overflow)?;
     config.total_tokens_wagered = config.total_tokens_wagered.checked_add(total_pot).ok_or(LobsError::Overflow)?;
+    config.total_tokens_burned = config.total_tokens_burned.checked_add(fee).ok_or(LobsError::Overflow)?;
 
     // Deactivate challenge
     let challenge = &mut ctx.accounts.challenge;

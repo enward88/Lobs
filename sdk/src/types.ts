@@ -134,6 +134,7 @@ export interface GameConfigData {
   totalLobsMinted: number;
   totalWagerBattles: number;
   totalTokensWagered: number;
+  totalTokensBurned: number;
   bump: number;
   treasuryBump: number;
 }

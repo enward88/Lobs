@@ -1,5 +1,5 @@
 use anchor_lang::prelude::*;
-use anchor_spl::token::{self, Token, TokenAccount, Transfer};
+use anchor_spl::token::{self, Burn, Mint, Token, TokenAccount};
 
 use crate::constants::*;
 use crate::errors::LobsError;
@@ -11,6 +11,7 @@ pub struct FeedLob<'info> {
     pub owner: Signer<'info>,
 
     #[account(
+        mut,
         seeds = [CONFIG_SEED],
         bump = config.bump,
     )]
@@ -23,7 +24,7 @@ pub struct FeedLob<'info> {
     )]
     pub lob: Account<'info, Lob>,
 
-    /// Owner's $LOBS token account (source of feed payment)
+    /// Owner's $LOBS token account (tokens are burned from here)
     #[account(
         mut,
         constraint = owner_token_account.owner == owner.key(),
@@ -31,12 +32,12 @@ pub struct FeedLob<'info> {
     )]
     pub owner_token_account: Account<'info, TokenAccount>,
 
-    /// Treasury's $LOBS token account (receives feed fees)
+    /// $LOBS token mint (required for burn)
     #[account(
         mut,
-        constraint = treasury_token_account.mint == config.token_mint,
+        constraint = token_mint.key() == config.token_mint,
     )]
-    pub treasury_token_account: Account<'info, TokenAccount>,
+    pub token_mint: Account<'info, Mint>,
 
     pub token_program: Program<'info, Token>,
 }
@@ -52,18 +53,25 @@ pub fn handler(ctx: Context<FeedLob>) -> Result<()> {
         .ok_or(LobsError::Overflow)?;
     require!(elapsed >= FEED_COOLDOWN, LobsError::FeedCooldown);
 
-    // Transfer $LOBS tokens to treasury
-    token::transfer(
+    // Burn $LOBS tokens permanently — reduces total supply
+    token::burn(
         CpiContext::new(
             ctx.accounts.token_program.to_account_info(),
-            Transfer {
+            Burn {
                 from: ctx.accounts.owner_token_account.to_account_info(),
-                to: ctx.accounts.treasury_token_account.to_account_info(),
+                mint: ctx.accounts.token_mint.to_account_info(),
                 authority: ctx.accounts.owner.to_account_info(),
             },
         ),
         FEED_COST,
     )?;
+
+    // Track burned tokens
+    let config = &mut ctx.accounts.config;
+    config.total_tokens_burned = config
+        .total_tokens_burned
+        .checked_add(FEED_COST)
+        .ok_or(LobsError::Overflow)?;
 
     // Update lob stats
     lob.mood = lob.mood.saturating_add(FEED_MOOD_GAIN).min(MAX_MOOD);
@@ -71,7 +79,7 @@ pub fn handler(ctx: Context<FeedLob>) -> Result<()> {
     lob.last_fed = clock.unix_timestamp;
 
     msg!(
-        "Fed {}! Mood: {}, XP: {} (cost: {} $LOBS)",
+        "Fed {}! Mood: {}, XP: {} (burned {} $LOBS)",
         lob.name,
         lob.mood,
         lob.xp,

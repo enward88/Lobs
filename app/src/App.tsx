@@ -194,7 +194,7 @@ function AllLobs() {
           <InfoCard
             number="02"
             title="Raise"
-            desc="Feed your Lob to keep its mood high and gain experience points"
+            desc="Burn $LOBS tokens to feed your creature. Tokens are destroyed permanently"
             accent="#00aaff"
           />
           <InfoCard
@@ -206,7 +206,7 @@ function AllLobs() {
           <InfoCard
             number="04"
             title="Wager"
-            desc="Stake $LOBS tokens on battles. Winner takes the pot minus a 2.5% arena fee"
+            desc="Stake $LOBS on battles. Winner takes the pot, 2.5% fee burned forever"
             accent="#ffcc00"
           />
         </div>

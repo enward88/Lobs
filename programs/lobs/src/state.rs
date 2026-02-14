@@ -15,6 +15,8 @@ pub struct GameConfig {
     pub total_wager_battles: u64,
     /// Total $LOBS wagered (token smallest units)
     pub total_tokens_wagered: u64,
+    /// Total $LOBS permanently burned (feeds + wager fees)
+    pub total_tokens_burned: u64,
     /// Bump seed for PDA
     pub bump: u8,
     /// Treasury bump seed

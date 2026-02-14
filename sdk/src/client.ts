@@ -140,17 +140,12 @@ export class LobsClient {
     return { lob, txSignature: tx };
   }
 
-  /** Feed a Lob — costs $LOBS tokens, +20 mood, +10 XP, 1hr cooldown */
+  /** Feed a Lob — burns $LOBS tokens permanently, +20 mood, +10 XP, 1hr cooldown */
   async feedLob(lobAddress: PublicKey): Promise<string> {
     const config = await this.getConfig();
     const ownerTokenAccount = await getAssociatedTokenAddress(
       config.tokenMint,
       this.wallet.publicKey
-    );
-    const treasuryTokenAccount = await getAssociatedTokenAddress(
-      config.tokenMint,
-      this.treasuryPda,
-      true
     );
 
     return this.program.methods
@@ -160,7 +155,7 @@ export class LobsClient {
         config: this.configPda,
         lob: lobAddress,
         ownerTokenAccount,
-        treasuryTokenAccount,
+        tokenMint: config.tokenMint,
         tokenProgram: TOKEN_PROGRAM_ID,
       })
       .rpc();
@@ -248,7 +243,7 @@ export class LobsClient {
 
   /**
    * Accept an existing wager challenge. Matches the stake, triggers battle.
-   * Winner gets the pot minus 2.5% fee.
+   * Winner gets the pot minus 2.5% fee (fee is burned permanently).
    */
   async acceptChallenge(
     challengeAddress: PublicKey,
@@ -284,6 +279,7 @@ export class LobsClient {
         defenderTokenAccount,
         challengerTokenAccount,
         treasuryTokenAccount,
+        tokenMint: config.tokenMint,
         slotHashes: SLOT_HASHES_SYSVAR,
         tokenProgram: TOKEN_PROGRAM_ID,
       })
@@ -402,6 +398,7 @@ export class LobsClient {
       totalLobsMinted: (c.totalLobsMinted as any as BN).toNumber(),
       totalWagerBattles: (c.totalWagerBattles as any as BN).toNumber(),
       totalTokensWagered: (c.totalTokensWagered as any as BN).toNumber(),
+      totalTokensBurned: (c.totalTokensBurned as any as BN).toNumber(),
       bump: c.bump,
       treasuryBump: c.treasuryBump,
     };
