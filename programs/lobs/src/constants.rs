@@ -1,5 +1,8 @@
-/// Feed cost in lamports (0.001 SOL)
-pub const FEED_COST: u64 = 1_000_000;
+/// Token decimals (Pump.fun standard = 6)
+pub const TOKEN_DECIMALS: u8 = 6;
+
+/// Feed cost in token smallest units (100 $LOBS with 6 decimals)
+pub const FEED_COST: u64 = 100_000_000;
 
 /// Minimum time between feeds in seconds (1 hour)
 pub const FEED_COOLDOWN: i64 = 3600;
@@ -43,11 +46,11 @@ pub const EVOLUTION_THRESHOLDS: [u32; 3] = [100, 500, 2000];
 /// Evolution stat multipliers (basis points: 10000 = 1.0x)
 pub const EVOLUTION_MULTIPLIERS: [u16; 4] = [10000, 12000, 15000, 20000];
 
-/// Minimum wager in lamports (0.01 SOL)
-pub const MIN_WAGER: u64 = 10_000_000;
+/// Minimum wager in token smallest units (1,000 $LOBS)
+pub const MIN_WAGER: u64 = 1_000_000_000;
 
-/// Maximum wager in lamports (10 SOL)
-pub const MAX_WAGER: u64 = 10_000_000_000;
+/// Maximum wager in token smallest units (100,000 $LOBS)
+pub const MAX_WAGER: u64 = 100_000_000_000;
 
 /// Wager fee in basis points (2.5% = 250 bps goes to treasury)
 pub const WAGER_FEE_BPS: u64 = 250;

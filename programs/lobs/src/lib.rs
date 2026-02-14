@@ -23,7 +23,7 @@ pub mod lobs {
         instructions::mint::handler(ctx, name)
     }
 
-    /// Feed a Lob to increase mood and XP. Costs 0.001 SOL.
+    /// Feed a Lob to increase mood and XP. Costs $LOBS tokens.
     pub fn feed_lob(ctx: Context<FeedLob>) -> Result<()> {
         instructions::feed::handler(ctx)
     }
@@ -38,7 +38,7 @@ pub mod lobs {
         instructions::evolve::handler(ctx)
     }
 
-    /// Create a wager battle challenge. Stakes SOL in escrow.
+    /// Create a wager battle challenge. Stakes $LOBS tokens in escrow.
     pub fn create_challenge(
         ctx: Context<CreateChallenge>,
         wager: u64,

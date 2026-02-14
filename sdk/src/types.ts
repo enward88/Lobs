@@ -122,17 +122,18 @@ export interface LobData {
   evolutionStage: EvolutionStage;
   isAlive: boolean;
   mintIndex: number;
-  solWon: number;
-  solLost: number;
+  tokensWon: number;
+  tokensLost: number;
   bump: number;
 }
 
 export interface GameConfigData {
   address: PublicKey;
   authority: PublicKey;
+  tokenMint: PublicKey;
   totalLobsMinted: number;
   totalWagerBattles: number;
-  totalSolWagered: number;
+  totalTokensWagered: number;
   bump: number;
   treasuryBump: number;
 }

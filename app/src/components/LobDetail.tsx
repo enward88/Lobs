@@ -203,23 +203,23 @@ export function LobDetail() {
             <div className="text-[9px] text-abyss-500 uppercase tracking-wider mt-1">Win Rate</div>
           </div>
         </div>
-        {(lob.solWon > 0 || lob.solLost > 0) && (
+        {(lob.tokensWon > 0 || lob.tokensLost > 0) && (
           <div className="border-t border-abyss-700/15 mt-4 pt-4">
             <h3 className="text-[10px] text-abyss-500 uppercase tracking-wider mb-3 font-medium">Wager Economy</h3>
             <div className="grid grid-cols-3 gap-4 text-center">
               <div>
-                <div className="text-lg font-bold font-mono text-biolume-green">{(lob.solWon / 1e9).toFixed(4)}</div>
-                <div className="text-[9px] text-abyss-500 uppercase tracking-wider mt-1">SOL Won</div>
+                <div className="text-lg font-bold font-mono text-biolume-green">{(lob.tokensWon / 1e6).toFixed(0)}</div>
+                <div className="text-[9px] text-abyss-500 uppercase tracking-wider mt-1">$LOBS Won</div>
               </div>
               <div>
-                <div className="text-lg font-bold font-mono text-biolume-pink">{(lob.solLost / 1e9).toFixed(4)}</div>
-                <div className="text-[9px] text-abyss-500 uppercase tracking-wider mt-1">SOL Lost</div>
+                <div className="text-lg font-bold font-mono text-biolume-pink">{(lob.tokensLost / 1e6).toFixed(0)}</div>
+                <div className="text-[9px] text-abyss-500 uppercase tracking-wider mt-1">$LOBS Lost</div>
               </div>
               <div>
-                <div className={`text-lg font-bold font-mono ${(lob.solWon - lob.solLost) >= 0 ? "text-biolume-gold" : "text-red-400"}`}>
-                  {((lob.solWon - lob.solLost) / 1e9) >= 0 ? "+" : ""}{((lob.solWon - lob.solLost) / 1e9).toFixed(4)}
+                <div className={`text-lg font-bold font-mono ${(lob.tokensWon - lob.tokensLost) >= 0 ? "text-biolume-gold" : "text-red-400"}`}>
+                  {((lob.tokensWon - lob.tokensLost) / 1e6) >= 0 ? "+" : ""}{((lob.tokensWon - lob.tokensLost) / 1e6).toFixed(0)}
                 </div>
-                <div className="text-[9px] text-abyss-500 uppercase tracking-wider mt-1">Net SOL</div>
+                <div className="text-[9px] text-abyss-500 uppercase tracking-wider mt-1">Net $LOBS</div>
               </div>
             </div>
           </div>

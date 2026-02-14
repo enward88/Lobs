@@ -206,7 +206,7 @@ function AllLobs() {
           <InfoCard
             number="04"
             title="Wager"
-            desc="Stake SOL on battles. Winner takes the pot minus a 2.5% arena fee"
+            desc="Stake $LOBS tokens on battles. Winner takes the pot minus a 2.5% arena fee"
             accent="#ffcc00"
           />
         </div>

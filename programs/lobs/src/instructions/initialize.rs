@@ -1,4 +1,6 @@
 use anchor_lang::prelude::*;
+use anchor_spl::token::{Mint, Token, TokenAccount};
+use anchor_spl::associated_token::AssociatedToken;
 
 use crate::constants::*;
 use crate::state::GameConfig;
@@ -7,6 +9,9 @@ use crate::state::GameConfig;
 pub struct Initialize<'info> {
     #[account(mut)]
     pub authority: Signer<'info>,
+
+    /// The $LOBS SPL token mint (from Pump.fun)
+    pub token_mint: Account<'info, Mint>,
 
     #[account(
         init,
@@ -17,23 +22,40 @@ pub struct Initialize<'info> {
     )]
     pub config: Account<'info, GameConfig>,
 
-    /// CHECK: Treasury PDA, just holds SOL
+    /// CHECK: Treasury PDA — authority over the treasury token account
     #[account(
         seeds = [TREASURY_SEED],
         bump,
     )]
     pub treasury: AccountInfo<'info>,
 
+    /// Treasury's associated token account for $LOBS
+    #[account(
+        init,
+        payer = authority,
+        associated_token::mint = token_mint,
+        associated_token::authority = treasury,
+    )]
+    pub treasury_token_account: Account<'info, TokenAccount>,
+
     pub system_program: Program<'info, System>,
+    pub token_program: Program<'info, Token>,
+    pub associated_token_program: Program<'info, AssociatedToken>,
 }
 
 pub fn handler(ctx: Context<Initialize>) -> Result<()> {
     let config = &mut ctx.accounts.config;
     config.authority = ctx.accounts.authority.key();
+    config.token_mint = ctx.accounts.token_mint.key();
     config.total_lobs_minted = 0;
+    config.total_wager_battles = 0;
+    config.total_tokens_wagered = 0;
     config.bump = ctx.bumps.config;
     config.treasury_bump = ctx.bumps.treasury;
 
-    msg!("Lobs game initialized!");
+    msg!(
+        "Lobs game initialized! Token mint: {}",
+        ctx.accounts.token_mint.key()
+    );
     Ok(())
 }

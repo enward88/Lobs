@@ -7,12 +7,14 @@ use crate::constants::*;
 pub struct GameConfig {
     /// Authority who initialized the game
     pub authority: Pubkey,
+    /// $LOBS SPL token mint address (from Pump.fun)
+    pub token_mint: Pubkey,
     /// Total lobs minted across all players
     pub total_lobs_minted: u64,
     /// Total wager battles completed
     pub total_wager_battles: u64,
-    /// Total SOL wagered (lamports)
-    pub total_sol_wagered: u64,
+    /// Total $LOBS wagered (token smallest units)
+    pub total_tokens_wagered: u64,
     /// Bump seed for PDA
     pub bump: u8,
     /// Treasury bump seed
@@ -51,15 +53,15 @@ pub struct Lob {
     pub is_alive: bool,
     /// Mint index for this owner (used in PDA derivation)
     pub mint_index: u64,
-    /// Total SOL won from wagers (lamports)
-    pub sol_won: u64,
-    /// Total SOL lost from wagers (lamports)
-    pub sol_lost: u64,
+    /// Total $LOBS tokens won from wagers
+    pub tokens_won: u64,
+    /// Total $LOBS tokens lost from wagers
+    pub tokens_lost: u64,
     /// Bump seed for PDA
     pub bump: u8,
 }
 
-/// A pending wager battle challenge. Challenger stakes SOL,
+/// A pending wager battle challenge. Challenger stakes $LOBS tokens,
 /// defender accepts to match and trigger the fight.
 #[account]
 #[derive(InitSpace)]
@@ -70,7 +72,7 @@ pub struct BattleChallenge {
     pub challenger_lob: Pubkey,
     /// The target defender's lob (or Pubkey::default for open challenge)
     pub defender_lob: Pubkey,
-    /// Wager amount in lamports (each side puts up this amount)
+    /// Wager amount in token smallest units (each side puts up this amount)
     pub wager: u64,
     /// When the challenge was created
     pub created_at: i64,

@@ -1,5 +1,5 @@
 use anchor_lang::prelude::*;
-use anchor_lang::system_program;
+use anchor_spl::token::{self, Token, TokenAccount, Transfer};
 
 use crate::constants::*;
 use crate::errors::LobsError;
@@ -31,15 +31,23 @@ pub struct CreateChallenge<'info> {
     )]
     pub challenge: Account<'info, BattleChallenge>,
 
-    /// CHECK: Treasury PDA that holds the wager escrow
+    /// Challenger's $LOBS token account (source of wager)
     #[account(
         mut,
-        seeds = [TREASURY_SEED],
-        bump = config.treasury_bump,
+        constraint = challenger_token_account.owner == challenger.key(),
+        constraint = challenger_token_account.mint == config.token_mint,
     )]
-    pub treasury: AccountInfo<'info>,
+    pub challenger_token_account: Account<'info, TokenAccount>,
+
+    /// Treasury's $LOBS token account (escrow for wager)
+    #[account(
+        mut,
+        constraint = treasury_token_account.mint == config.token_mint,
+    )]
+    pub treasury_token_account: Account<'info, TokenAccount>,
 
     pub system_program: Program<'info, System>,
+    pub token_program: Program<'info, Token>,
 }
 
 pub fn handler(
@@ -50,13 +58,14 @@ pub fn handler(
     require!(wager >= MIN_WAGER, LobsError::WagerTooLow);
     require!(wager <= MAX_WAGER, LobsError::WagerTooHigh);
 
-    // Transfer wager to treasury as escrow
-    system_program::transfer(
+    // Transfer $LOBS wager to treasury as escrow
+    token::transfer(
         CpiContext::new(
-            ctx.accounts.system_program.to_account_info(),
-            system_program::Transfer {
-                from: ctx.accounts.challenger.to_account_info(),
-                to: ctx.accounts.treasury.to_account_info(),
+            ctx.accounts.token_program.to_account_info(),
+            Transfer {
+                from: ctx.accounts.challenger_token_account.to_account_info(),
+                to: ctx.accounts.treasury_token_account.to_account_info(),
+                authority: ctx.accounts.challenger.to_account_info(),
             },
         ),
         wager,
@@ -73,7 +82,7 @@ pub fn handler(
     challenge.bump = ctx.bumps.challenge;
 
     msg!(
-        "Challenge created: {} wagered {} lamports",
+        "Challenge created: {} wagered {} $LOBS tokens",
         ctx.accounts.challenger_lob.name,
         wager
     );

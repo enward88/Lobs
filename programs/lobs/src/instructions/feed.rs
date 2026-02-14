@@ -1,5 +1,5 @@
 use anchor_lang::prelude::*;
-use anchor_lang::system_program;
+use anchor_spl::token::{self, Token, TokenAccount, Transfer};
 
 use crate::constants::*;
 use crate::errors::LobsError;
@@ -23,15 +23,22 @@ pub struct FeedLob<'info> {
     )]
     pub lob: Account<'info, Lob>,
 
-    /// CHECK: Treasury PDA that receives feed fees
+    /// Owner's $LOBS token account (source of feed payment)
     #[account(
         mut,
-        seeds = [TREASURY_SEED],
-        bump = config.treasury_bump,
+        constraint = owner_token_account.owner == owner.key(),
+        constraint = owner_token_account.mint == config.token_mint,
     )]
-    pub treasury: AccountInfo<'info>,
+    pub owner_token_account: Account<'info, TokenAccount>,
 
-    pub system_program: Program<'info, System>,
+    /// Treasury's $LOBS token account (receives feed fees)
+    #[account(
+        mut,
+        constraint = treasury_token_account.mint == config.token_mint,
+    )]
+    pub treasury_token_account: Account<'info, TokenAccount>,
+
+    pub token_program: Program<'info, Token>,
 }
 
 pub fn handler(ctx: Context<FeedLob>) -> Result<()> {
@@ -45,13 +52,14 @@ pub fn handler(ctx: Context<FeedLob>) -> Result<()> {
         .ok_or(LobsError::Overflow)?;
     require!(elapsed >= FEED_COOLDOWN, LobsError::FeedCooldown);
 
-    // Transfer feed cost to treasury
-    system_program::transfer(
+    // Transfer $LOBS tokens to treasury
+    token::transfer(
         CpiContext::new(
-            ctx.accounts.system_program.to_account_info(),
-            system_program::Transfer {
-                from: ctx.accounts.owner.to_account_info(),
-                to: ctx.accounts.treasury.to_account_info(),
+            ctx.accounts.token_program.to_account_info(),
+            Transfer {
+                from: ctx.accounts.owner_token_account.to_account_info(),
+                to: ctx.accounts.treasury_token_account.to_account_info(),
+                authority: ctx.accounts.owner.to_account_info(),
             },
         ),
         FEED_COST,
@@ -63,10 +71,11 @@ pub fn handler(ctx: Context<FeedLob>) -> Result<()> {
     lob.last_fed = clock.unix_timestamp;
 
     msg!(
-        "Fed {}! Mood: {}, XP: {}",
+        "Fed {}! Mood: {}, XP: {} (cost: {} $LOBS)",
         lob.name,
         lob.mood,
-        lob.xp
+        lob.xp,
+        FEED_COST
     );
 
     Ok(())

@@ -17,8 +17,8 @@ export interface LobAccount {
   evolutionStage: number;
   isAlive: boolean;
   mintIndex: number;
-  solWon: number;
-  solLost: number;
+  tokensWon: number;
+  tokensLost: number;
 }
 
 /** Read a little-endian u32 from a byte array */
@@ -119,11 +119,11 @@ function parseLob(pubkey: string, base64Data: string): LobAccount | null {
     offset += 8;
 
     // sol_won: u64
-    const solWon = readU64LE(data, offset);
+    const tokensWon = readU64LE(data, offset);
     offset += 8;
 
     // sol_lost: u64
-    const solLost = readU64LE(data, offset);
+    const tokensLost = readU64LE(data, offset);
 
     return {
       address: pubkey,
@@ -141,8 +141,8 @@ function parseLob(pubkey: string, base64Data: string): LobAccount | null {
       evolutionStage,
       isAlive,
       mintIndex,
-      solWon,
-      solLost,
+      tokensWon,
+      tokensLost,
     };
   } catch {
     return null;

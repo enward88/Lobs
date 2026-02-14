@@ -11,6 +11,11 @@ import {
   SystemProgram,
 } from "@solana/web3.js";
 import {
+  TOKEN_PROGRAM_ID,
+  ASSOCIATED_TOKEN_PROGRAM_ID,
+  getAssociatedTokenAddress,
+} from "@solana/spl-token";
+import {
   LobData,
   GameConfigData,
   BattleResult,
@@ -91,15 +96,25 @@ export class LobsClient {
 
   // ─── Core Actions ─────────────────────────────────────────
 
-  /** Initialize the game (one-time setup by deployer) */
-  async initialize(): Promise<string> {
+  /** Initialize the game (one-time setup by deployer). Pass the $LOBS token mint. */
+  async initialize(tokenMint: PublicKey): Promise<string> {
+    const treasuryTokenAccount = await getAssociatedTokenAddress(
+      tokenMint,
+      this.treasuryPda,
+      true // allowOwnerOffCurve (PDA)
+    );
+
     return this.program.methods
       .initialize()
       .accounts({
         authority: this.wallet.publicKey,
         config: this.configPda,
         treasury: this.treasuryPda,
+        tokenMint,
+        treasuryTokenAccount,
         systemProgram: SystemProgram.programId,
+        tokenProgram: TOKEN_PROGRAM_ID,
+        associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
       })
       .rpc();
   }
@@ -125,16 +140,28 @@ export class LobsClient {
     return { lob, txSignature: tx };
   }
 
-  /** Feed a Lob (0.001 SOL, +20 mood, +10 XP, 1hr cooldown) */
+  /** Feed a Lob — costs $LOBS tokens, +20 mood, +10 XP, 1hr cooldown */
   async feedLob(lobAddress: PublicKey): Promise<string> {
+    const config = await this.getConfig();
+    const ownerTokenAccount = await getAssociatedTokenAddress(
+      config.tokenMint,
+      this.wallet.publicKey
+    );
+    const treasuryTokenAccount = await getAssociatedTokenAddress(
+      config.tokenMint,
+      this.treasuryPda,
+      true
+    );
+
     return this.program.methods
       .feedLob()
       .accounts({
         owner: this.wallet.publicKey,
         config: this.configPda,
         lob: lobAddress,
-        treasury: this.treasuryPda,
-        systemProgram: SystemProgram.programId,
+        ownerTokenAccount,
+        treasuryTokenAccount,
+        tokenProgram: TOKEN_PROGRAM_ID,
       })
       .rpc();
   }
@@ -175,22 +202,33 @@ export class LobsClient {
   // ─── Wager Battles ────────────────────────────────────────
 
   /**
-   * Create a wager challenge. Your SOL goes into escrow.
+   * Create a wager challenge. Your $LOBS tokens go into escrow.
    * @param myLob Your Lob's address
-   * @param wagerSol Wager in SOL (min 0.01, max 10)
+   * @param wagerTokens Wager in $LOBS tokens (whole units, e.g. 1000 = 1000 $LOBS)
    * @param targetLob Optional: specific opponent. Omit for open challenge.
    */
   async createChallenge(
     myLob: PublicKey,
-    wagerSol: number,
+    wagerTokens: number,
     targetLob?: PublicKey
   ): Promise<{ challenge: PublicKey; txSignature: string }> {
-    const wagerLamports = Math.floor(wagerSol * 1_000_000_000);
+    const config = await this.getConfig();
+    const wagerSmallestUnits = BigInt(wagerTokens) * BigInt(1_000_000); // 6 decimals
     const [challengePda] = deriveChallengePda(this.programId, myLob);
+
+    const challengerTokenAccount = await getAssociatedTokenAddress(
+      config.tokenMint,
+      this.wallet.publicKey
+    );
+    const treasuryTokenAccount = await getAssociatedTokenAddress(
+      config.tokenMint,
+      this.treasuryPda,
+      true
+    );
 
     const tx = await this.program.methods
       .createChallenge(
-        new BN(wagerLamports),
+        new BN(wagerSmallestUnits.toString()),
         targetLob || null
       )
       .accounts({
@@ -198,8 +236,10 @@ export class LobsClient {
         config: this.configPda,
         challengerLob: myLob,
         challenge: challengePda,
-        treasury: this.treasuryPda,
+        challengerTokenAccount,
+        treasuryTokenAccount,
         systemProgram: SystemProgram.programId,
+        tokenProgram: TOKEN_PROGRAM_ID,
       })
       .rpc();
 
@@ -214,8 +254,23 @@ export class LobsClient {
     challengeAddress: PublicKey,
     myLob: PublicKey
   ): Promise<WagerResult> {
+    const config = await this.getConfig();
     const challenge = await this.getChallenge(challengeAddress);
     const beforeLob = await this.getLob(myLob);
+
+    const defenderTokenAccount = await getAssociatedTokenAddress(
+      config.tokenMint,
+      this.wallet.publicKey
+    );
+    const challengerTokenAccount = await getAssociatedTokenAddress(
+      config.tokenMint,
+      challenge.challenger
+    );
+    const treasuryTokenAccount = await getAssociatedTokenAddress(
+      config.tokenMint,
+      this.treasuryPda,
+      true
+    );
 
     const tx = await this.program.methods
       .acceptChallenge()
@@ -226,9 +281,11 @@ export class LobsClient {
         challengerLob: challenge.challengerLob,
         defenderLob: myLob,
         treasury: this.treasuryPda,
-        challengerWallet: challenge.challenger,
+        defenderTokenAccount,
+        challengerTokenAccount,
+        treasuryTokenAccount,
         slotHashes: SLOT_HASHES_SYSVAR,
-        systemProgram: SystemProgram.programId,
+        tokenProgram: TOKEN_PROGRAM_ID,
       })
       .rpc();
 
@@ -268,8 +325,8 @@ export class LobsClient {
       evolutionStage: a.evolutionStage as EvolutionStage,
       isAlive: a.isAlive,
       mintIndex: (a.mintIndex as any as BN).toNumber(),
-      solWon: (a.solWon as any as BN).toNumber(),
-      solLost: (a.solLost as any as BN).toNumber(),
+      tokensWon: (a.tokensWon as any as BN).toNumber(),
+      tokensLost: (a.tokensLost as any as BN).toNumber(),
       bump: a.bump,
     };
   }
@@ -293,8 +350,8 @@ export class LobsClient {
       evolutionStage: a.account.evolutionStage as EvolutionStage,
       isAlive: a.account.isAlive,
       mintIndex: (a.account.mintIndex as any as BN).toNumber(),
-      solWon: (a.account.solWon as any as BN).toNumber(),
-      solLost: (a.account.solLost as any as BN).toNumber(),
+      tokensWon: (a.account.tokensWon as any as BN).toNumber(),
+      tokensLost: (a.account.tokensLost as any as BN).toNumber(),
       bump: a.account.bump,
     }));
   }
@@ -341,9 +398,10 @@ export class LobsClient {
     return {
       address: this.configPda,
       authority: c.authority,
+      tokenMint: c.tokenMint,
       totalLobsMinted: (c.totalLobsMinted as any as BN).toNumber(),
       totalWagerBattles: (c.totalWagerBattles as any as BN).toNumber(),
-      totalSolWagered: (c.totalSolWagered as any as BN).toNumber(),
+      totalTokensWagered: (c.totalTokensWagered as any as BN).toNumber(),
       bump: c.bump,
       treasuryBump: c.treasuryBump,
     };

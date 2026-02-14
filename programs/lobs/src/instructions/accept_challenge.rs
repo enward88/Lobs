@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program::sysvar::slot_hashes;
-use anchor_lang::system_program;
+use anchor_spl::token::{self, Token, TokenAccount, Transfer};
 
 use crate::constants::*;
 use crate::errors::LobsError;
@@ -39,26 +39,41 @@ pub struct AcceptChallenge<'info> {
     )]
     pub defender_lob: Account<'info, Lob>,
 
-    /// CHECK: Treasury PDA
+    /// CHECK: Treasury PDA — signer for token transfers out
     #[account(
-        mut,
         seeds = [TREASURY_SEED],
         bump = config.treasury_bump,
     )]
     pub treasury: AccountInfo<'info>,
 
-    /// CHECK: Challenger wallet to receive winnings
+    /// Treasury's $LOBS token account (holds escrow)
     #[account(
         mut,
-        constraint = challenger_wallet.key() == challenge.challenger,
+        constraint = treasury_token_account.mint == config.token_mint,
     )]
-    pub challenger_wallet: AccountInfo<'info>,
+    pub treasury_token_account: Account<'info, TokenAccount>,
+
+    /// Defender's $LOBS token account (matches wager, receives winnings if winner)
+    #[account(
+        mut,
+        constraint = defender_token_account.owner == defender.key(),
+        constraint = defender_token_account.mint == config.token_mint,
+    )]
+    pub defender_token_account: Account<'info, TokenAccount>,
+
+    /// Challenger's $LOBS token account (receives winnings if winner)
+    #[account(
+        mut,
+        constraint = challenger_token_account.owner == challenge.challenger,
+        constraint = challenger_token_account.mint == config.token_mint,
+    )]
+    pub challenger_token_account: Account<'info, TokenAccount>,
 
     /// CHECK: SlotHashes sysvar for tiebreaker
     #[account(address = slot_hashes::id())]
     pub slot_hashes: AccountInfo<'info>,
 
-    pub system_program: Program<'info, System>,
+    pub token_program: Program<'info, Token>,
 }
 
 pub fn handler(ctx: Context<AcceptChallenge>) -> Result<()> {
@@ -75,12 +90,13 @@ pub fn handler(ctx: Context<AcceptChallenge>) -> Result<()> {
     let wager = challenge.wager;
 
     // Defender matches the wager -> treasury
-    system_program::transfer(
+    token::transfer(
         CpiContext::new(
-            ctx.accounts.system_program.to_account_info(),
-            system_program::Transfer {
-                from: ctx.accounts.defender.to_account_info(),
-                to: ctx.accounts.treasury.to_account_info(),
+            ctx.accounts.token_program.to_account_info(),
+            Transfer {
+                from: ctx.accounts.defender_token_account.to_account_info(),
+                to: ctx.accounts.treasury_token_account.to_account_info(),
+                authority: ctx.accounts.defender.to_account_info(),
             },
         ),
         wager,
@@ -129,7 +145,7 @@ pub fn handler(ctx: Context<AcceptChallenge>) -> Result<()> {
 
     drop(slot_hashes_data);
 
-    // === Distribute wager ===
+    // === Distribute wager via SPL token transfer ===
     let total_pot = wager.checked_mul(2).ok_or(LobsError::Overflow)?;
     let fee = total_pot
         .checked_mul(WAGER_FEE_BPS)
@@ -137,19 +153,28 @@ pub fn handler(ctx: Context<AcceptChallenge>) -> Result<()> {
         / 10000;
     let winnings = total_pot.checked_sub(fee).ok_or(LobsError::Overflow)?;
 
-    // Pay winner from treasury PDA
+    // Treasury PDA signs the transfer out
     let treasury_bump = ctx.accounts.config.treasury_bump;
-    let treasury_seeds: &[&[u8]] = &[TREASURY_SEED, &[treasury_bump]];
+    let treasury_seeds: &[&[&[u8]]] = &[&[TREASURY_SEED, &[treasury_bump]]];
 
-    if challenger_wins {
-        // Pay challenger
-        **ctx.accounts.treasury.try_borrow_mut_lamports()? -= winnings;
-        **ctx.accounts.challenger_wallet.try_borrow_mut_lamports()? += winnings;
+    let winner_token_account = if challenger_wins {
+        ctx.accounts.challenger_token_account.to_account_info()
     } else {
-        // Pay defender
-        **ctx.accounts.treasury.try_borrow_mut_lamports()? -= winnings;
-        **ctx.accounts.defender.try_borrow_mut_lamports()? += winnings;
-    }
+        ctx.accounts.defender_token_account.to_account_info()
+    };
+
+    token::transfer(
+        CpiContext::new_with_signer(
+            ctx.accounts.token_program.to_account_info(),
+            Transfer {
+                from: ctx.accounts.treasury_token_account.to_account_info(),
+                to: winner_token_account,
+                authority: ctx.accounts.treasury.to_account_info(),
+            },
+            treasury_seeds,
+        ),
+        winnings,
+    )?;
 
     // === Update lob stats ===
     let challenger_lob = &mut ctx.accounts.challenger_lob;
@@ -159,30 +184,30 @@ pub fn handler(ctx: Context<AcceptChallenge>) -> Result<()> {
         challenger_lob.xp = challenger_lob.xp.checked_add(BATTLE_WIN_XP).ok_or(LobsError::Overflow)?;
         challenger_lob.mood = challenger_lob.mood.saturating_add(BATTLE_WIN_MOOD).min(MAX_MOOD);
         challenger_lob.battles_won = challenger_lob.battles_won.checked_add(1).ok_or(LobsError::Overflow)?;
-        challenger_lob.sol_won = challenger_lob.sol_won.checked_add(winnings).ok_or(LobsError::Overflow)?;
+        challenger_lob.tokens_won = challenger_lob.tokens_won.checked_add(winnings).ok_or(LobsError::Overflow)?;
 
         defender_lob.mood = defender_lob.mood.saturating_sub(BATTLE_LOSE_MOOD);
         defender_lob.battles_lost = defender_lob.battles_lost.checked_add(1).ok_or(LobsError::Overflow)?;
-        defender_lob.sol_lost = defender_lob.sol_lost.checked_add(wager).ok_or(LobsError::Overflow)?;
+        defender_lob.tokens_lost = defender_lob.tokens_lost.checked_add(wager).ok_or(LobsError::Overflow)?;
 
-        msg!("Wager battle: {} defeated {}! Won {} lamports", challenger_lob.name, defender_lob.name, winnings);
+        msg!("Wager battle: {} defeated {}! Won {} $LOBS", challenger_lob.name, defender_lob.name, winnings);
     } else {
         defender_lob.xp = defender_lob.xp.checked_add(BATTLE_WIN_XP).ok_or(LobsError::Overflow)?;
         defender_lob.mood = defender_lob.mood.saturating_add(BATTLE_WIN_MOOD).min(MAX_MOOD);
         defender_lob.battles_won = defender_lob.battles_won.checked_add(1).ok_or(LobsError::Overflow)?;
-        defender_lob.sol_won = defender_lob.sol_won.checked_add(winnings).ok_or(LobsError::Overflow)?;
+        defender_lob.tokens_won = defender_lob.tokens_won.checked_add(winnings).ok_or(LobsError::Overflow)?;
 
         challenger_lob.mood = challenger_lob.mood.saturating_sub(BATTLE_LOSE_MOOD);
         challenger_lob.battles_lost = challenger_lob.battles_lost.checked_add(1).ok_or(LobsError::Overflow)?;
-        challenger_lob.sol_lost = challenger_lob.sol_lost.checked_add(wager).ok_or(LobsError::Overflow)?;
+        challenger_lob.tokens_lost = challenger_lob.tokens_lost.checked_add(wager).ok_or(LobsError::Overflow)?;
 
-        msg!("Wager battle: {} defeated {}! Won {} lamports", defender_lob.name, challenger_lob.name, winnings);
+        msg!("Wager battle: {} defeated {}! Won {} $LOBS", defender_lob.name, challenger_lob.name, winnings);
     }
 
     // Update config stats
     let config = &mut ctx.accounts.config;
     config.total_wager_battles = config.total_wager_battles.checked_add(1).ok_or(LobsError::Overflow)?;
-    config.total_sol_wagered = config.total_sol_wagered.checked_add(total_pot).ok_or(LobsError::Overflow)?;
+    config.total_tokens_wagered = config.total_tokens_wagered.checked_add(total_pot).ok_or(LobsError::Overflow)?;
 
     // Deactivate challenge
     let challenge = &mut ctx.accounts.challenge;

@@ -61,7 +61,7 @@ export function formatLob(lob: LobData): string {
     `${lob.name} — ${info.name} [${info.family}] (${stage})`,
     `  STR:${lob.strength} VIT:${lob.vitality} SPD:${lob.speed} | Mood:${lob.mood}/100`,
     `  XP:${lob.xp} | ${lob.battlesWon}W/${lob.battlesLost}L (${winRate}%)`,
-    `  SOL won: ${(lob.solWon / 1e9).toFixed(4)} | SOL lost: ${(lob.solLost / 1e9).toFixed(4)}`,
+    `  $LOBS won: ${(lob.tokensWon / 1e6).toFixed(2)} | $LOBS lost: ${(lob.tokensLost / 1e6).toFixed(2)}`,
     `  Owner: ${lob.owner.toString().slice(0, 8)}...`,
   ].join("\n");
 }

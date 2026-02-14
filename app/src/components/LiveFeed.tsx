@@ -58,16 +58,16 @@ function deriveActivity(lobs: LobAccount[]) {
     }
 
     // Wager events
-    if (lob.solWon > 0 || lob.solLost > 0) {
-      const net = (lob.solWon - lob.solLost) / 1e9;
+    if (lob.tokensWon > 0 || lob.tokensLost > 0) {
+      const net = (lob.tokensWon - lob.tokensLost) / 1e6;
       events.push({
         id: `wager-${lob.address}`,
         type: "wager",
         text: `${lob.name} wagered in the arena`,
-        detail: `Won ${(lob.solWon / 1e9).toFixed(4)} SOL / Lost ${(lob.solLost / 1e9).toFixed(4)} SOL (net: ${net >= 0 ? "+" : ""}${net.toFixed(4)})`,
+        detail: `Won ${(lob.tokensWon / 1e6).toFixed(0)} $LOBS / Lost ${(lob.tokensLost / 1e6).toFixed(0)} $LOBS (net: ${net >= 0 ? "+" : ""}${net.toFixed(0)})`,
         species: lob.species,
         accent: "#ffcc00",
-        timestamp: lob.mintIndex + (lob.solWon + lob.solLost),
+        timestamp: lob.mintIndex + (lob.tokensWon + lob.tokensLost),
       });
     }
   }
@@ -180,8 +180,8 @@ export function EcosystemStats() {
     (sum, l) => sum + l.battlesWon + l.battlesLost,
     0
   );
-  const totalSolWon = lobs.reduce((sum, l) => sum + l.solWon, 0);
-  const totalSolLost = lobs.reduce((sum, l) => sum + l.solLost, 0);
+  const totalTokensWon = lobs.reduce((sum, l) => sum + l.tokensWon, 0);
+  const totalTokensLost = lobs.reduce((sum, l) => sum + l.tokensLost, 0);
   const avgMood =
     lobs.length > 0
       ? Math.round(lobs.reduce((sum, l) => sum + l.mood, 0) / lobs.length)
@@ -212,8 +212,8 @@ export function EcosystemStats() {
         <MiniStat label="Evolved" value={String(evolved)} accent="#aa55ff" />
         <MiniStat label="Avg Mood" value={String(avgMood)} accent="#00ff88" />
         <MiniStat
-          label="SOL Wagered"
-          value={((totalSolWon + totalSolLost) / 2e9).toFixed(2)}
+          label="$LOBS Wagered"
+          value={((totalTokensWon + totalTokensLost) / 2e6).toFixed(0)}
           accent="#ffcc00"
         />
       </div>
