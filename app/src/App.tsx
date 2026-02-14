@@ -73,6 +73,13 @@ function Nav() {
           <span className="text-[10px] text-abyss-400 tracking-wider uppercase hidden sm:block">
             from the deep
           </span>
+          <div className="h-4 w-px bg-abyss-700/50 hidden sm:block" />
+          <span
+            className="text-[9px] tracking-[0.15em] uppercase hidden sm:block font-mono"
+            style={{ color: "rgba(255, 204, 0, 0.7)" }}
+          >
+            CA: coming soon
+          </span>
         </Link>
 
         <div className="flex items-center gap-3">
@@ -151,6 +158,12 @@ function AllLobs() {
           </p>
           <p className="text-abyss-500 text-xs mt-1 tracking-wider">
             Mint &middot; Raise &middot; Battle &middot; Wager &middot; Evolve
+          </p>
+          <p
+            className="text-sm mt-4 font-mono tracking-wider"
+            style={{ color: "rgba(255, 204, 0, 0.6)" }}
+          >
+            CA: coming soon
           </p>
         </div>
 
