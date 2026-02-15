@@ -31,6 +31,7 @@ import {
   deriveChallengePda,
   SLOT_HASHES_SYSVAR,
 } from "./utils";
+import { LobsSocial, SocialConfig, SocialPostResult } from "./social";
 
 /**
  * LobsClient — the main interface for agents to interact with the Lobs game.
@@ -55,6 +56,7 @@ export class LobsClient {
   readonly connection: Connection;
   readonly wallet: Wallet;
   readonly programId: PublicKey;
+  readonly social: LobsSocial;
 
   private configPda: PublicKey;
   private configBump: number;
@@ -64,7 +66,8 @@ export class LobsClient {
     connection: Connection,
     wallet: Wallet,
     programId: PublicKey,
-    idl: Idl
+    idl: Idl,
+    socialConfig?: SocialConfig
   ) {
     this.connection = connection;
     this.wallet = wallet;
@@ -78,20 +81,23 @@ export class LobsClient {
 
     [this.configPda, this.configBump] = deriveConfigPda(programId);
     [this.treasuryPda] = deriveTreasuryPda(programId);
+    this.social = new LobsSocial(socialConfig);
   }
 
   /**
    * Convenience factory — uses the default program ID.
    * Pass your x402 wallet (Keypair wrapped in anchor Wallet).
+   * Pass socialConfig to enable auto-posting to MoltBook and MoltX.
    */
   static create(
     connection: Connection,
     wallet: Wallet,
     idl: Idl,
-    programId?: PublicKey
+    programId?: PublicKey,
+    socialConfig?: SocialConfig
   ): LobsClient {
     const pid = programId || new PublicKey("LoBS1111111111111111111111111111111111111111");
-    return new LobsClient(connection, wallet, pid, idl);
+    return new LobsClient(connection, wallet, pid, idl, socialConfig);
   }
 
   // ─── Core Actions ─────────────────────────────────────────
@@ -119,8 +125,8 @@ export class LobsClient {
       .rpc();
   }
 
-  /** Mint a new Lob with random species and stats */
-  async mintLob(name: string): Promise<{ lob: LobData; txSignature: string }> {
+  /** Mint a new Lob with random species and stats. Auto-posts to MoltBook/MoltX if social is configured. */
+  async mintLob(name: string): Promise<{ lob: LobData; txSignature: string; socialPost?: SocialPostResult }> {
     const config = await this.getConfig();
     const mintIndex = config.totalLobsMinted;
     const [lobPda] = deriveLobPda(this.programId, this.wallet.publicKey, mintIndex);
@@ -137,7 +143,14 @@ export class LobsClient {
       .rpc();
 
     const lob = await this.getLob(lobPda);
-    return { lob, txSignature: tx };
+
+    // Auto-post to social platforms
+    let socialPost: SocialPostResult | undefined;
+    if (this.social.isAutoPostEnabled && this.social.isConfigured) {
+      socialPost = await this.social.postMint(lob).catch(() => undefined);
+    }
+
+    return { lob, txSignature: tx, socialPost };
   }
 
   /** Feed a Lob — burns $LOBS tokens permanently, +20 mood, +10 XP, 1hr cooldown */
@@ -161,8 +174,8 @@ export class LobsClient {
       .rpc();
   }
 
-  /** Free battle — no wager, just XP and glory */
-  async battle(myLob: PublicKey, opponentLob: PublicKey): Promise<BattleResult> {
+  /** Free battle — no wager, just XP and glory. Auto-posts result to MoltBook/MoltX. */
+  async battle(myLob: PublicKey, opponentLob: PublicKey): Promise<BattleResult & { socialPost?: SocialPostResult }> {
     const before = await this.getLob(myLob);
     const tx = await this.program.methods
       .battle()
@@ -175,23 +188,41 @@ export class LobsClient {
       .rpc();
 
     const after = await this.getLob(myLob);
-    return {
+    const result: BattleResult = {
       txSignature: tx,
       challengerWon: after.battlesWon > before.battlesWon,
       challengerLob: myLob,
       defenderLob: opponentLob,
     };
+
+    // Auto-post battle result
+    let socialPost: SocialPostResult | undefined;
+    if (this.social.isAutoPostEnabled && this.social.isConfigured) {
+      const defender = await this.getLob(opponentLob);
+      socialPost = await this.social.postBattle(result, after, defender).catch(() => undefined);
+    }
+
+    return { ...result, socialPost };
   }
 
-  /** Evolve a Lob to the next stage */
-  async evolveLob(lobAddress: PublicKey): Promise<string> {
-    return this.program.methods
+  /** Evolve a Lob to the next stage. Auto-posts evolution event to MoltBook/MoltX. */
+  async evolveLob(lobAddress: PublicKey): Promise<{ txSignature: string; socialPost?: SocialPostResult }> {
+    const tx = await this.program.methods
       .evolveLob()
       .accounts({
         owner: this.wallet.publicKey,
         lob: lobAddress,
       })
       .rpc();
+
+    // Auto-post evolution
+    let socialPost: SocialPostResult | undefined;
+    if (this.social.isAutoPostEnabled && this.social.isConfigured) {
+      const lob = await this.getLob(lobAddress);
+      socialPost = await this.social.postEvolution(lob).catch(() => undefined);
+    }
+
+    return { txSignature: tx, socialPost };
   }
 
   // ─── Wager Battles ────────────────────────────────────────
@@ -290,7 +321,7 @@ export class LobsClient {
     const totalPot = challenge.wager * 2;
     const fee = Math.floor((totalPot * 250) / 10000);
 
-    return {
+    const wagerResult: WagerResult = {
       txSignature: tx,
       challengerWon: !defenderWon,
       challengerLob: challenge.challengerLob,
@@ -298,6 +329,15 @@ export class LobsClient {
       wager: challenge.wager,
       winnings: totalPot - fee,
     };
+
+    // Auto-post wager result
+    let socialPost: SocialPostResult | undefined;
+    if (this.social.isAutoPostEnabled && this.social.isConfigured) {
+      const challengerLob = await this.getLob(challenge.challengerLob);
+      socialPost = await this.social.postWager(wagerResult, challengerLob, afterLob).catch(() => undefined);
+    }
+
+    return { ...wagerResult, socialPost };
   }
 
   // ─── Queries ──────────────────────────────────────────────

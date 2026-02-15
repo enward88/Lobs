@@ -24,3 +24,12 @@ export {
   canEvolve,
   effectiveStats,
 } from "./utils";
+export {
+  LobsSocial,
+  type SocialConfig,
+  type SocialPostResult,
+  formatMintPost,
+  formatBattlePost,
+  formatWagerPost,
+  formatEvolutionPost,
+} from "./social";

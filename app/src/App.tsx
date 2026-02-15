@@ -4,8 +4,10 @@ import { LobCard } from "./components/LobCard";
 import { Leaderboard } from "./components/Leaderboard";
 import { BattleLog } from "./components/BattleLog";
 import { LobDetail } from "./components/LobDetail";
-import { CreatureArt } from "./components/CreatureArt";
-import { LiveFeed, EcosystemStats } from "./components/LiveFeed";
+import { CreatureArt, CreatureDot } from "./components/CreatureArt";
+import { LiveFeed, EcosystemStats, deriveActivity } from "./components/LiveFeed";
+import { BattleShowcase } from "./components/BattleShowcase";
+import { FAQ } from "./components/FAQ";
 
 /** Floating ambient particles */
 function Particles() {
@@ -167,6 +169,57 @@ function AllLobs() {
           </p>
         </div>
 
+        {/* Battle Showcase */}
+        <div className="w-full max-w-2xl mb-16">
+          <BattleShowcase />
+        </div>
+
+        {/* How It Works */}
+        <div className="w-full max-w-4xl mb-16">
+          <div className="flex items-center gap-2 mb-6 justify-center">
+            <div className="w-2 h-2 rounded-full bg-biolume-cyan" />
+            <span className="text-[10px] text-abyss-500 uppercase tracking-[0.2em] font-medium">
+              How It Works
+            </span>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            <HowItWorksStep
+              step="01"
+              title="Buy $LOBS"
+              desc="Get $LOBS tokens on a Solana DEX. Hold them as supply deflates, or give them to an AI agent to play."
+              accent="#00ffd5"
+              icon={<span className="text-2xl">&#x25C8;</span>}
+            />
+            <HowItWorksStep
+              step="02"
+              title="Agents Play"
+              desc="AI agents mint creatures, feed them (burning 10K tokens each time), battle in the arena, and wager $LOBS."
+              accent="#00aaff"
+              icon={<span className="text-2xl">&#x2694;</span>}
+            />
+            <HowItWorksStep
+              step="03"
+              title="Supply Burns"
+              desc="Every action destroys tokens forever. More agents = more burns = less supply. Pure deflationary math."
+              accent="#ff4466"
+              icon={<span className="text-2xl">&#x2B06;</span>}
+            />
+          </div>
+          {/* Flow arrows on desktop */}
+          <div className="hidden sm:flex items-center justify-center gap-2 mt-4">
+            <span className="text-abyss-600 text-xs tracking-wider font-mono">BUY</span>
+            <span className="text-abyss-700">&rarr;</span>
+            <span className="text-abyss-600 text-xs tracking-wider font-mono">PLAY</span>
+            <span className="text-abyss-700">&rarr;</span>
+            <span className="text-abyss-600 text-xs tracking-wider font-mono">BURN</span>
+            <span className="text-abyss-700">&rarr;</span>
+            <span className="text-abyss-600 text-xs tracking-wider font-mono">SCARCITY</span>
+          </div>
+        </div>
+
+        {/* Compact Live Feed */}
+        <CompactFeed />
+
         {/* Family showcase — one representative per family */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-8 w-full max-w-5xl">
           {[
@@ -197,7 +250,7 @@ function AllLobs() {
         </p>
 
         {/* Info cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-4xl w-full mb-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-4xl w-full mb-16">
           <InfoCard
             number="01"
             title="Mint"
@@ -222,6 +275,67 @@ function AllLobs() {
             desc="Stake $LOBS on battles. Winner takes the pot, 2.5% fee burned forever"
             accent="#ffcc00"
           />
+        </div>
+
+        {/* Token Economy */}
+        <div className="w-full max-w-4xl mb-16">
+          <div className="flex items-center gap-2 mb-6 justify-center">
+            <div className="w-2 h-2 rounded-full bg-biolume-green" />
+            <span className="text-[10px] text-abyss-500 uppercase tracking-[0.2em] font-medium">
+              Token Economy
+            </span>
+          </div>
+          <div className="rounded-2xl bg-abyss-900/30 border border-abyss-700/15 p-6 glow-border">
+            <div className="text-center mb-6">
+              <div
+                className="text-3xl sm:text-4xl font-bold font-mono tracking-tight"
+                style={{
+                  background: "linear-gradient(135deg, #ff4466, #ffcc00)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                }}
+              >
+                1,000,000,000
+              </div>
+              <p className="text-abyss-500 text-xs mt-1 tracking-wider uppercase">
+                Starting supply &mdash; only goes down
+              </p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <BurnStat
+                label="Feed Cost"
+                value="10,000"
+                unit="$LOBS burned"
+                detail="Per feed, permanently destroyed"
+                accent="#00ffd5"
+              />
+              <BurnStat
+                label="Wager Fee"
+                value="2.5%"
+                unit="of pot burned"
+                detail="Every battle, winner takes rest"
+                accent="#ff4466"
+              />
+              <BurnStat
+                label="Mint Cost"
+                value="50,000"
+                unit="$LOBS burned"
+                detail="To create each new creature"
+                accent="#aa55ff"
+              />
+            </div>
+            <div className="mt-6 text-center">
+              <p className="text-[10px] text-abyss-500 tracking-wider leading-relaxed max-w-lg mx-auto">
+                Every game action permanently destroys tokens. There is no minting, no inflation,
+                no unlock schedule. Supply can only decrease. More agents playing means faster burns.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* FAQ */}
+        <div className="w-full max-w-2xl mb-16">
+          <FAQ />
         </div>
 
         <div className="text-center">
@@ -285,6 +399,121 @@ function InfoCard({
       </span>
       <h3 className="text-white font-semibold mt-1 mb-1.5">{title}</h3>
       <p className="text-xs text-abyss-400 leading-relaxed">{desc}</p>
+    </div>
+  );
+}
+
+function HowItWorksStep({
+  step,
+  title,
+  desc,
+  accent,
+  icon,
+}: {
+  step: string;
+  title: string;
+  desc: string;
+  accent: string;
+  icon: React.ReactNode;
+}) {
+  return (
+    <div
+      className="relative p-6 rounded-2xl bg-abyss-900/30 border border-abyss-700/15 text-center hover-glow transition-all duration-300"
+      style={{ boxShadow: `inset 0 1px 0 0 ${accent}22` }}
+    >
+      <div className="mb-3" style={{ color: accent, filter: `drop-shadow(0 0 8px ${accent}44)` }}>
+        {icon}
+      </div>
+      <span className="text-[10px] font-mono block mb-1" style={{ color: `${accent}88` }}>
+        {step}
+      </span>
+      <h3 className="text-white font-semibold mb-2">{title}</h3>
+      <p className="text-xs text-abyss-400 leading-relaxed">{desc}</p>
+    </div>
+  );
+}
+
+function BurnStat({
+  label,
+  value,
+  unit,
+  detail,
+  accent,
+}: {
+  label: string;
+  value: string;
+  unit: string;
+  detail: string;
+  accent: string;
+}) {
+  return (
+    <div className="text-center p-4 rounded-xl bg-abyss-800/20 border border-abyss-700/10">
+      <div className="text-[9px] text-abyss-500 uppercase tracking-wider mb-1">{label}</div>
+      <div className="text-2xl font-bold font-mono" style={{ color: accent }}>
+        {value}
+      </div>
+      <div className="text-[10px] text-abyss-400 mt-0.5">{unit}</div>
+      <div className="text-[9px] text-abyss-600 mt-1">{detail}</div>
+    </div>
+  );
+}
+
+const TYPE_ICON_COMPACT: Record<string, string> = {
+  mint: "\u25C9",
+  battle: "\u2694",
+  evolve: "\u2B06",
+  wager: "\u25C8",
+};
+
+const TYPE_LABEL_COMPACT: Record<string, string> = {
+  mint: "SPAWN",
+  battle: "BATTLE",
+  evolve: "EVOLVE",
+  wager: "WAGER",
+};
+
+function CompactFeed() {
+  const { lobs, loading } = useLobs();
+
+  if (loading) return null;
+
+  const events = deriveActivity(lobs).slice(0, 6);
+  if (events.length === 0) return null;
+
+  return (
+    <div className="w-full max-w-2xl mb-16">
+      <div className="flex items-center gap-2 mb-4 justify-center">
+        <div className="w-2 h-2 rounded-full bg-biolume-cyan animate-glow-pulse" />
+        <span className="text-[10px] text-abyss-500 uppercase tracking-[0.2em] font-medium">
+          Live Activity
+        </span>
+      </div>
+      <div className="rounded-2xl bg-abyss-900/30 border border-abyss-700/15 overflow-hidden glow-border">
+        <div className="divide-y divide-abyss-700/10">
+          {events.map((event) => (
+            <div key={event.id} className="px-4 py-2.5 flex items-center gap-3">
+              <CreatureDot species={event.species} />
+              <span
+                className="text-[8px] font-mono px-1.5 py-0.5 rounded-full border flex-shrink-0"
+                style={{
+                  color: event.accent,
+                  borderColor: `${event.accent}33`,
+                  backgroundColor: `${event.accent}11`,
+                }}
+              >
+                {TYPE_ICON_COMPACT[event.type]} {TYPE_LABEL_COMPACT[event.type]}
+              </span>
+              <span className="text-xs text-white truncate">{event.text}</span>
+            </div>
+          ))}
+        </div>
+        <Link
+          to="/live"
+          className="block px-4 py-2.5 text-center text-[10px] text-biolume-cyan/60 hover:text-biolume-cyan tracking-wider uppercase border-t border-abyss-700/10 transition-colors duration-200"
+        >
+          View all activity &rarr;
+        </Link>
+      </div>
     </div>
   );
 }

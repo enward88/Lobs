@@ -8,7 +8,7 @@ import {
 } from "../lib/program";
 
 /** Derive pseudo-activity from on-chain state for spectators */
-function deriveActivity(lobs: LobAccount[]) {
+export function deriveActivity(lobs: LobAccount[]) {
   const events: {
     id: string;
     type: "mint" | "battle" | "evolve" | "wager";
