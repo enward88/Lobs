@@ -12,6 +12,7 @@ import { FAQ } from "./components/FAQ";
 import { Creatures } from "./components/Creatures";
 import { Marketplace } from "./components/Marketplace";
 import { Social } from "./components/Social";
+import { AgentDashboard } from "./components/AgentDashboard";
 
 /** Floating ambient particles */
 function Particles() {
@@ -63,6 +64,7 @@ function Nav() {
     { to: "/live", label: "Live" },
     { to: "/social", label: "Social" },
     { to: "/marketplace", label: "Market" },
+    { to: "/agent", label: "Agent" },
     { to: "/leaderboard", label: "Rankings" },
     { to: "/battles", label: "Arena" },
   ];
@@ -696,6 +698,7 @@ export default function App() {
             <Route path="/creatures" element={<Creatures />} />
             <Route path="/live" element={<LiveFeed />} />
             <Route path="/social" element={<Social />} />
+            <Route path="/agent" element={<AgentDashboard />} />
             <Route path="/marketplace" element={<Marketplace />} />
             <Route path="/leaderboard" element={<Leaderboard />} />
             <Route path="/battles" element={<BattleLog />} />

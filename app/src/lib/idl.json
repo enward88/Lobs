@@ -1,0 +1,942 @@
+{
+  "address": "GDjye2re8UKJFaDf6ez45vjSyqWvBLffeRNTfgi3fpfL",
+  "metadata": {
+    "name": "lobs",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "On-chain pet collection game on Solana"
+  },
+  "instructions": [
+    {
+      "name": "accept_challenge",
+      "docs": [
+        "Accept a wager challenge. Matches the stake, resolves battle, pays winner."
+      ],
+      "discriminator": [
+        195,
+        227,
+        139,
+        241,
+        55,
+        193,
+        153,
+        105
+      ],
+      "accounts": [
+        {
+          "name": "defender",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "challenge",
+          "writable": true
+        },
+        {
+          "name": "challenger_lob",
+          "writable": true
+        },
+        {
+          "name": "defender_lob",
+          "writable": true
+        },
+        {
+          "name": "treasury",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  116,
+                  114,
+                  101,
+                  97,
+                  115,
+                  117,
+                  114,
+                  121
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "treasury_token_account",
+          "docs": [
+            "Treasury's $LOBS token account (holds escrow)"
+          ],
+          "writable": true
+        },
+        {
+          "name": "defender_token_account",
+          "docs": [
+            "Defender's $LOBS token account (matches wager, receives winnings if winner)"
+          ],
+          "writable": true
+        },
+        {
+          "name": "challenger_token_account",
+          "docs": [
+            "Challenger's $LOBS token account (receives winnings if winner)"
+          ],
+          "writable": true
+        },
+        {
+          "name": "token_mint",
+          "docs": [
+            "$LOBS token mint (required for burning the arena fee)"
+          ],
+          "writable": true
+        },
+        {
+          "name": "slot_hashes",
+          "address": "SysvarS1otHashes111111111111111111111111111"
+        },
+        {
+          "name": "token_program"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "battle",
+      "docs": [
+        "Battle another agent's Lob. Free, no wager."
+      ],
+      "discriminator": [
+        124,
+        60,
+        127,
+        254,
+        179,
+        26,
+        138,
+        20
+      ],
+      "accounts": [
+        {
+          "name": "challenger",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "challenger_lob",
+          "writable": true
+        },
+        {
+          "name": "defender_lob",
+          "writable": true
+        },
+        {
+          "name": "slot_hashes",
+          "address": "SysvarS1otHashes111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "create_challenge",
+      "docs": [
+        "Create a wager battle challenge. Stakes $LOBS tokens in escrow."
+      ],
+      "discriminator": [
+        170,
+        244,
+        47,
+        1,
+        1,
+        15,
+        173,
+        239
+      ],
+      "accounts": [
+        {
+          "name": "challenger",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "challenger_lob"
+        },
+        {
+          "name": "challenge",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  104,
+                  97,
+                  108,
+                  108,
+                  101,
+                  110,
+                  103,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "challenger_lob"
+              }
+            ]
+          }
+        },
+        {
+          "name": "challenger_token_account",
+          "docs": [
+            "Challenger's $LOBS token account (source of wager)"
+          ],
+          "writable": true
+        },
+        {
+          "name": "treasury_token_account",
+          "docs": [
+            "Treasury's $LOBS token account (escrow for wager)"
+          ],
+          "writable": true
+        },
+        {
+          "name": "token_mint",
+          "docs": [
+            "$LOBS token mint (required for transfer_checked)"
+          ]
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "token_program"
+        }
+      ],
+      "args": [
+        {
+          "name": "wager",
+          "type": "u64"
+        },
+        {
+          "name": "defender_lob",
+          "type": {
+            "option": "pubkey"
+          }
+        }
+      ]
+    },
+    {
+      "name": "evolve_lob",
+      "docs": [
+        "Evolve a Lob to the next stage when XP threshold is met."
+      ],
+      "discriminator": [
+        90,
+        150,
+        1,
+        78,
+        37,
+        167,
+        121,
+        225
+      ],
+      "accounts": [
+        {
+          "name": "owner",
+          "signer": true
+        },
+        {
+          "name": "lob",
+          "writable": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "feed_lob",
+      "docs": [
+        "Feed a Lob to increase mood and XP. Costs $LOBS tokens."
+      ],
+      "discriminator": [
+        171,
+        106,
+        21,
+        9,
+        16,
+        223,
+        238,
+        197
+      ],
+      "accounts": [
+        {
+          "name": "owner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "lob",
+          "writable": true
+        },
+        {
+          "name": "owner_token_account",
+          "docs": [
+            "Owner's $LOBS token account (tokens are burned from here)"
+          ],
+          "writable": true
+        },
+        {
+          "name": "token_mint",
+          "docs": [
+            "$LOBS token mint (required for burn)"
+          ],
+          "writable": true
+        },
+        {
+          "name": "token_program"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "initialize",
+      "docs": [
+        "Initialize the game config and treasury. Called once."
+      ],
+      "discriminator": [
+        175,
+        175,
+        109,
+        31,
+        13,
+        152,
+        155,
+        237
+      ],
+      "accounts": [
+        {
+          "name": "authority",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "token_mint",
+          "docs": [
+            "The $LOBS token mint (from Pump.fun — Token-2022)"
+          ]
+        },
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "treasury",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  116,
+                  114,
+                  101,
+                  97,
+                  115,
+                  117,
+                  114,
+                  121
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "treasury_token_account",
+          "docs": [
+            "Treasury's associated token account for $LOBS"
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "treasury"
+              },
+              {
+                "kind": "account",
+                "path": "token_program"
+              },
+              {
+                "kind": "account",
+                "path": "token_mint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "token_program"
+        },
+        {
+          "name": "associated_token_program",
+          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "mint_lob",
+      "docs": [
+        "Mint a new Lob with random species and stats."
+      ],
+      "discriminator": [
+        116,
+        186,
+        220,
+        133,
+        237,
+        169,
+        192,
+        128
+      ],
+      "accounts": [
+        {
+          "name": "owner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "lob",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  108,
+                  111,
+                  98
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              },
+              {
+                "kind": "account",
+                "path": "config.total_lobs_minted",
+                "account": "GameConfig"
+              }
+            ]
+          }
+        },
+        {
+          "name": "slot_hashes",
+          "address": "SysvarS1otHashes111111111111111111111111111"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "name",
+          "type": "string"
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "BattleChallenge",
+      "discriminator": [
+        156,
+        129,
+        11,
+        185,
+        152,
+        237,
+        151,
+        142
+      ]
+    },
+    {
+      "name": "GameConfig",
+      "discriminator": [
+        45,
+        146,
+        146,
+        33,
+        170,
+        69,
+        96,
+        133
+      ]
+    },
+    {
+      "name": "Lob",
+      "discriminator": [
+        193,
+        54,
+        212,
+        43,
+        161,
+        229,
+        49,
+        131
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "NameTooLong",
+      "msg": "Name exceeds maximum length of 32 bytes"
+    },
+    {
+      "code": 6001,
+      "name": "FeedCooldown",
+      "msg": "Feed is on cooldown"
+    },
+    {
+      "code": 6002,
+      "name": "LobDead",
+      "msg": "Lob is no longer alive"
+    },
+    {
+      "code": 6003,
+      "name": "AlreadyMaxEvolution",
+      "msg": "Already at maximum evolution stage"
+    },
+    {
+      "code": 6004,
+      "name": "InsufficientXp",
+      "msg": "Insufficient XP to evolve"
+    },
+    {
+      "code": 6005,
+      "name": "CannotBattleSelf",
+      "msg": "Cannot battle your own Lob"
+    },
+    {
+      "code": 6006,
+      "name": "Overflow",
+      "msg": "Arithmetic overflow"
+    },
+    {
+      "code": 6007,
+      "name": "InvalidSpecies",
+      "msg": "Invalid species value"
+    },
+    {
+      "code": 6008,
+      "name": "WagerTooLow",
+      "msg": "Wager below minimum (0.01 SOL)"
+    },
+    {
+      "code": 6009,
+      "name": "WagerTooHigh",
+      "msg": "Wager above maximum (10 SOL)"
+    },
+    {
+      "code": 6010,
+      "name": "ChallengeInactive",
+      "msg": "Challenge is no longer active"
+    },
+    {
+      "code": 6011,
+      "name": "WrongDefender",
+      "msg": "Wrong defender lob for this challenge"
+    }
+  ],
+  "types": [
+    {
+      "name": "BattleChallenge",
+      "docs": [
+        "A pending wager battle challenge. Challenger stakes $LOBS tokens,",
+        "defender accepts to match and trigger the fight."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "challenger",
+            "docs": [
+              "Who issued the challenge"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "challenger_lob",
+            "docs": [
+              "The challenger's lob"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "defender_lob",
+            "docs": [
+              "The target defender's lob (or Pubkey::default for open challenge)"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "wager",
+            "docs": [
+              "Wager amount in token smallest units (each side puts up this amount)"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "created_at",
+            "docs": [
+              "When the challenge was created"
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "is_active",
+            "docs": [
+              "Whether the challenge is still active"
+            ],
+            "type": "bool"
+          },
+          {
+            "name": "bump",
+            "docs": [
+              "Bump seed"
+            ],
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "GameConfig",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "authority",
+            "docs": [
+              "Authority who initialized the game"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "token_mint",
+            "docs": [
+              "$LOBS SPL token mint address (from Pump.fun)"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "total_lobs_minted",
+            "docs": [
+              "Total lobs minted across all players"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "total_wager_battles",
+            "docs": [
+              "Total wager battles completed"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "total_tokens_wagered",
+            "docs": [
+              "Total $LOBS wagered (token smallest units)"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "total_tokens_burned",
+            "docs": [
+              "Total $LOBS permanently burned (feeds + wager fees)"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "bump",
+            "docs": [
+              "Bump seed for PDA"
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "treasury_bump",
+            "docs": [
+              "Treasury bump seed"
+            ],
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Lob",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "owner",
+            "docs": [
+              "Owner wallet address"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "name",
+            "docs": [
+              "Lob name"
+            ],
+            "type": "string"
+          },
+          {
+            "name": "species",
+            "docs": [
+              "Species type (0-29)"
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "xp",
+            "docs": [
+              "Current XP"
+            ],
+            "type": "u32"
+          },
+          {
+            "name": "strength",
+            "docs": [
+              "Base strength stat"
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "vitality",
+            "docs": [
+              "Base vitality stat"
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "speed",
+            "docs": [
+              "Base speed stat"
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "luck",
+            "docs": [
+              "Base luck stat (affects crit chance and dodge chance)"
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "mood",
+            "docs": [
+              "Current mood (0-100)"
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "last_fed",
+            "docs": [
+              "Last fed timestamp"
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "battles_won",
+            "docs": [
+              "Total battles won"
+            ],
+            "type": "u32"
+          },
+          {
+            "name": "battles_lost",
+            "docs": [
+              "Total battles lost"
+            ],
+            "type": "u32"
+          },
+          {
+            "name": "evolution_stage",
+            "docs": [
+              "Evolution stage (0-3)"
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "is_alive",
+            "docs": [
+              "Whether the lob is alive"
+            ],
+            "type": "bool"
+          },
+          {
+            "name": "mint_index",
+            "docs": [
+              "Mint index for this owner (used in PDA derivation)"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "tokens_won",
+            "docs": [
+              "Total $LOBS tokens won from wagers"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "tokens_lost",
+            "docs": [
+              "Total $LOBS tokens lost from wagers"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "bump",
+            "docs": [
+              "Bump seed for PDA"
+            ],
+            "type": "u8"
+          }
+        ]
+      }
+    }
+  ]
+}
