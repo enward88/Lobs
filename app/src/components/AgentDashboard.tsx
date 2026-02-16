@@ -7,6 +7,7 @@ import { AgentSetup } from "./AgentSetup";
 import { AgentLog } from "./AgentLog";
 import { CreatureArt } from "./CreatureArt";
 import { SPECIES_NAME, SPECIES_FAMILY, FAMILY_COLOR, STAGE_NAME } from "../lib/program";
+import { loadAgentConfig } from "../lib/agentKeypair";
 
 export function AgentDashboard() {
   const { publicKey, signMessage, sendTransaction, connected } = useWallet();
@@ -85,6 +86,21 @@ export function AgentDashboard() {
   const isRunning = agent.snapshot.status === "running";
   const isPaused = agent.snapshot.status === "paused";
   const isLowFunds = agent.snapshot.status === "low_funds";
+  const isIdle = !isRunning && !isPaused && !isLowFunds;
+  const hasExistingCreature = agent.myLobs.length > 0;
+  const hasFunds = agent.lobsBalance > 0 || agent.solBalance > 0;
+  const isReturningUser = isIdle && (hasExistingCreature || hasFunds);
+
+  // Resume handler for returning users — uses saved config or defaults
+  const handleResume = useCallback(() => {
+    const saved = agent.burnerPubkey ? loadAgentConfig(agent.burnerPubkey) : null;
+    agent.startAgent({
+      creatureName: saved?.creatureName || agent.myLobs[0]?.name || "Resumed",
+      aggression: saved?.aggression || "balanced",
+      maxWagerTokens: saved?.maxWagerTokens || 0,
+      tickIntervalMs: 45000,
+    });
+  }, [agent]);
 
   return (
     <div className="max-w-3xl mx-auto">
@@ -284,7 +300,7 @@ export function AgentDashboard() {
             </div>
           )}
 
-          {/* Controls */}
+          {/* Controls — running/paused/low funds */}
           {(isRunning || isPaused || isLowFunds) && (
             <div className="flex gap-3">
               {isRunning ? (
@@ -301,12 +317,7 @@ export function AgentDashboard() {
                 </button>
               ) : (
                 <button
-                  onClick={() => agent.startAgent({
-                    creatureName: "Resumed",
-                    aggression: "balanced",
-                    maxWagerTokens: 0,
-                    tickIntervalMs: 45000,
-                  })}
+                  onClick={handleResume}
                   className="flex-1 py-3 rounded-xl text-sm font-medium tracking-wider border transition-all duration-200"
                   style={{
                     color: "#00ff88",
@@ -332,8 +343,53 @@ export function AgentDashboard() {
             </div>
           )}
 
-          {/* Setup form (when idle and no creature yet) */}
-          {!isRunning && !isPaused && !isLowFunds && (
+          {/* Returning user — has creature or funds, just needs to resume */}
+          {isReturningUser && (
+            <div className="rounded-2xl bg-abyss-900/30 border border-abyss-700/15 overflow-hidden glow-border">
+              <div className="px-5 py-3 border-b border-abyss-700/20">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-biolume-cyan" />
+                  <span className="text-[10px] text-abyss-500 uppercase tracking-[0.2em]">Welcome Back</span>
+                </div>
+              </div>
+              <div className="p-5 text-center">
+                <p className="text-abyss-300 text-sm mb-4">
+                  {hasExistingCreature
+                    ? `Your creature "${agent.myLobs[0].name}" is waiting in the deep.`
+                    : "Your agent still has funds. Resume or withdraw."}
+                </p>
+                <div className="flex gap-3 justify-center">
+                  <button
+                    onClick={handleResume}
+                    className="px-6 py-3 rounded-xl text-sm font-medium tracking-wider transition-all duration-300"
+                    style={{
+                      background: "linear-gradient(135deg, rgba(0, 255, 213, 0.15), rgba(0, 170, 255, 0.15))",
+                      border: "1px solid rgba(0, 255, 213, 0.3)",
+                      color: "#00ffd5",
+                      boxShadow: "0 0 20px rgba(0, 255, 213, 0.1)",
+                    }}
+                  >
+                    Resume Diving
+                  </button>
+                  <button
+                    onClick={handleWithdraw}
+                    disabled={withdrawing}
+                    className="px-6 py-3 rounded-xl text-sm font-medium tracking-wider border transition-all duration-200 disabled:opacity-30"
+                    style={{
+                      color: "#ff4466",
+                      borderColor: "rgba(255, 68, 102, 0.3)",
+                      backgroundColor: "rgba(255, 68, 102, 0.05)",
+                    }}
+                  >
+                    {withdrawing ? "Withdrawing..." : "Withdraw Funds"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Fresh setup form (new user, no creature, no funds) */}
+          {isIdle && !isReturningUser && (
             <div className="rounded-2xl bg-abyss-900/30 border border-abyss-700/15 overflow-hidden glow-border">
               <div className="px-5 py-3 border-b border-abyss-700/20">
                 <div className="flex items-center gap-2">
