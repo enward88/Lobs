@@ -1,5 +1,5 @@
 use anchor_lang::prelude::*;
-use anchor_spl::token::{self, Burn, Mint, Token, TokenAccount};
+use anchor_spl::token_interface::{self, Burn, Mint, TokenAccount, TokenInterface};
 
 use crate::constants::*;
 use crate::errors::LobsError;
@@ -30,16 +30,16 @@ pub struct FeedLob<'info> {
         constraint = owner_token_account.owner == owner.key(),
         constraint = owner_token_account.mint == config.token_mint,
     )]
-    pub owner_token_account: Account<'info, TokenAccount>,
+    pub owner_token_account: InterfaceAccount<'info, TokenAccount>,
 
     /// $LOBS token mint (required for burn)
     #[account(
         mut,
         constraint = token_mint.key() == config.token_mint,
     )]
-    pub token_mint: Account<'info, Mint>,
+    pub token_mint: InterfaceAccount<'info, Mint>,
 
-    pub token_program: Program<'info, Token>,
+    pub token_program: Interface<'info, TokenInterface>,
 }
 
 pub fn handler(ctx: Context<FeedLob>) -> Result<()> {
@@ -54,7 +54,7 @@ pub fn handler(ctx: Context<FeedLob>) -> Result<()> {
     require!(elapsed >= FEED_COOLDOWN, LobsError::FeedCooldown);
 
     // Burn $LOBS tokens permanently — reduces total supply
-    token::burn(
+    token_interface::burn(
         CpiContext::new(
             ctx.accounts.token_program.to_account_info(),
             Burn {

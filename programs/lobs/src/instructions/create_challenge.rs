@@ -1,5 +1,5 @@
 use anchor_lang::prelude::*;
-use anchor_spl::token::{self, Token, TokenAccount, Transfer};
+use anchor_spl::token_interface::{self, TokenAccount, TokenInterface, TransferChecked, Mint};
 
 use crate::constants::*;
 use crate::errors::LobsError;
@@ -37,17 +37,23 @@ pub struct CreateChallenge<'info> {
         constraint = challenger_token_account.owner == challenger.key(),
         constraint = challenger_token_account.mint == config.token_mint,
     )]
-    pub challenger_token_account: Account<'info, TokenAccount>,
+    pub challenger_token_account: InterfaceAccount<'info, TokenAccount>,
 
     /// Treasury's $LOBS token account (escrow for wager)
     #[account(
         mut,
         constraint = treasury_token_account.mint == config.token_mint,
     )]
-    pub treasury_token_account: Account<'info, TokenAccount>,
+    pub treasury_token_account: InterfaceAccount<'info, TokenAccount>,
+
+    /// $LOBS token mint (required for transfer_checked)
+    #[account(
+        constraint = token_mint.key() == config.token_mint,
+    )]
+    pub token_mint: InterfaceAccount<'info, Mint>,
 
     pub system_program: Program<'info, System>,
-    pub token_program: Program<'info, Token>,
+    pub token_program: Interface<'info, TokenInterface>,
 }
 
 pub fn handler(
@@ -59,16 +65,18 @@ pub fn handler(
     require!(wager <= MAX_WAGER, LobsError::WagerTooHigh);
 
     // Transfer $LOBS wager to treasury as escrow
-    token::transfer(
+    token_interface::transfer_checked(
         CpiContext::new(
             ctx.accounts.token_program.to_account_info(),
-            Transfer {
+            TransferChecked {
                 from: ctx.accounts.challenger_token_account.to_account_info(),
+                mint: ctx.accounts.token_mint.to_account_info(),
                 to: ctx.accounts.treasury_token_account.to_account_info(),
                 authority: ctx.accounts.challenger.to_account_info(),
             },
         ),
         wager,
+        TOKEN_DECIMALS,
     )?;
 
     let clock = Clock::get()?;

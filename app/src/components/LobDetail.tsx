@@ -45,6 +45,7 @@ export function LobDetail() {
   const effStr = Math.floor((lob.strength * mult * lob.mood) / 1_000_000);
   const effVit = Math.floor((lob.vitality * mult * 10) / 10000);
   const effSpd = Math.floor((lob.speed * mult) / 10000);
+  const effLck = Math.floor((lob.luck * mult) / 10000);
 
   const xpForNext = lob.evolutionStage < 3 ? EVOLUTION_THRESHOLDS[lob.evolutionStage] : null;
   const xpProgress = xpForNext !== null ? Math.min((lob.xp / xpForNext) * 100, 100) : 100;
@@ -125,6 +126,7 @@ export function LobDetail() {
             <DetailStatBar label="Strength" value={lob.strength} max={20} barClass="stat-str" />
             <DetailStatBar label="Vitality" value={lob.vitality} max={20} barClass="stat-vit" />
             <DetailStatBar label="Speed" value={lob.speed} max={20} barClass="stat-spd" />
+            <DetailStatBar label="Luck" value={lob.luck} max={20} barClass="stat-lck" />
           </div>
         </div>
 
@@ -138,6 +140,7 @@ export function LobDetail() {
             <DetailStatBar label="Strength" value={effStr} max={40} barClass="stat-str" />
             <DetailStatBar label="Vitality" value={effVit} max={40} barClass="stat-vit" />
             <DetailStatBar label="Speed" value={effSpd} max={40} barClass="stat-spd" />
+            <DetailStatBar label="Luck" value={effLck} max={40} barClass="stat-lck" />
           </div>
         </div>
       </div>

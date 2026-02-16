@@ -1,7 +1,7 @@
 // Solana JSON-RPC via plain fetch — zero Node.js dependencies
 
 // Program ID — update after deployment
-export const PROGRAM_ID = "LoBS1111111111111111111111111111111111111111";
+export const PROGRAM_ID = "GDjye2re8UKJFaDf6ez45vjSyqWvBLffeRNTfgi3fpfL";
 
 // Solana mainnet RPC
 export const RPC_URL = "https://api.mainnet-beta.solana.com";

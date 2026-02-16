@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { PROGRAM_ID, rpcCall, base58Encode } from "../lib/program";
+import { MOCK_BOTS } from "../data/mockBots";
 
 export interface LobAccount {
   address: string;
@@ -10,6 +11,7 @@ export interface LobAccount {
   strength: number;
   vitality: number;
   speed: number;
+  luck: number;
   mood: number;
   lastFed: number;
   battlesWon: number;
@@ -90,6 +92,10 @@ function parseLob(pubkey: string, base64Data: string): LobAccount | null {
     const speed = data[offset];
     offset += 1;
 
+    // luck: u8
+    const luck = data[offset];
+    offset += 1;
+
     // mood: u8
     const mood = data[offset];
     offset += 1;
@@ -134,6 +140,7 @@ function parseLob(pubkey: string, base64Data: string): LobAccount | null {
       strength,
       vitality,
       speed,
+      luck,
       mood,
       lastFed,
       battlesWon,
@@ -174,17 +181,23 @@ export function useLobs() {
           }
         }
 
-        parsed.sort((a, b) => a.mintIndex - b.mintIndex);
+        // Merge mock bots with real on-chain data
+        const realAddresses = new Set(parsed.map((l) => l.address));
+        const merged = [
+          ...parsed,
+          ...MOCK_BOTS.filter((b) => !realAddresses.has(b.address)),
+        ];
+        merged.sort((a, b) => a.mintIndex - b.mintIndex);
 
         if (!cancelled) {
-          setLobs(parsed);
+          setLobs(merged);
           setLoading(false);
           setError(null);
         }
       } catch {
-        // Program not deployed yet or RPC unavailable — show empty state
+        // Program not deployed yet or RPC unavailable — show bots
         if (!cancelled) {
-          setLobs([]);
+          setLobs([...MOCK_BOTS].sort((a, b) => a.mintIndex - b.mintIndex));
           setLoading(false);
         }
       }

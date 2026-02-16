@@ -7,7 +7,7 @@ pub mod state;
 
 use instructions::*;
 
-declare_id!("LoBS1111111111111111111111111111111111111111");
+declare_id!("GDjye2re8UKJFaDf6ez45vjSyqWvBLffeRNTfgi3fpfL");
 
 #[program]
 pub mod lobs {

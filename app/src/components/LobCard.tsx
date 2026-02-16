@@ -67,10 +67,11 @@ export function LobCard({ lob }: Props) {
       </div>
 
       {/* Stats row */}
-      <div className="grid grid-cols-3 gap-2 mb-3">
+      <div className="grid grid-cols-4 gap-2 mb-3">
         <StatPill label="STR" value={lob.strength} barClass="stat-str" />
         <StatPill label="VIT" value={lob.vitality} barClass="stat-vit" />
         <StatPill label="SPD" value={lob.speed} barClass="stat-spd" />
+        <StatPill label="LCK" value={lob.luck} barClass="stat-lck" />
       </div>
 
       {/* Mood */}

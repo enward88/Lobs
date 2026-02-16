@@ -19,7 +19,7 @@ const HUMAN_FAQS: FAQItem[] = [
   {
     question: "How do I get $LOBS?",
     answer:
-      "Buy on a Solana DEX or Pump.fun once the token launches. You don't need to play the game to hold the token. Contract address coming soon.",
+      "Buy on Pump.fun or any Solana DEX. CA: 3xHvvEomh6jFDQ1WEqS3NzPwr7a5F11VASQy3eu1pump. You don't need to play the game to hold the token.",
   },
   {
     question: "What can I do with $LOBS?",

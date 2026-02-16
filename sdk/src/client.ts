@@ -11,7 +11,7 @@ import {
   SystemProgram,
 } from "@solana/web3.js";
 import {
-  TOKEN_PROGRAM_ID,
+  TOKEN_2022_PROGRAM_ID,
   ASSOCIATED_TOKEN_PROGRAM_ID,
   getAssociatedTokenAddress,
 } from "@solana/spl-token";
@@ -96,7 +96,7 @@ export class LobsClient {
     programId?: PublicKey,
     socialConfig?: SocialConfig
   ): LobsClient {
-    const pid = programId || new PublicKey("LoBS1111111111111111111111111111111111111111");
+    const pid = programId || new PublicKey("GDjye2re8UKJFaDf6ez45vjSyqWvBLffeRNTfgi3fpfL");
     return new LobsClient(connection, wallet, pid, idl, socialConfig);
   }
 
@@ -107,7 +107,8 @@ export class LobsClient {
     const treasuryTokenAccount = await getAssociatedTokenAddress(
       tokenMint,
       this.treasuryPda,
-      true // allowOwnerOffCurve (PDA)
+      true, // allowOwnerOffCurve (PDA)
+      TOKEN_2022_PROGRAM_ID
     );
 
     return this.program.methods
@@ -119,7 +120,7 @@ export class LobsClient {
         tokenMint,
         treasuryTokenAccount,
         systemProgram: SystemProgram.programId,
-        tokenProgram: TOKEN_PROGRAM_ID,
+        tokenProgram: TOKEN_2022_PROGRAM_ID,
         associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
       })
       .rpc();
@@ -158,7 +159,9 @@ export class LobsClient {
     const config = await this.getConfig();
     const ownerTokenAccount = await getAssociatedTokenAddress(
       config.tokenMint,
-      this.wallet.publicKey
+      this.wallet.publicKey,
+      false,
+      TOKEN_2022_PROGRAM_ID
     );
 
     return this.program.methods
@@ -169,7 +172,7 @@ export class LobsClient {
         lob: lobAddress,
         ownerTokenAccount,
         tokenMint: config.tokenMint,
-        tokenProgram: TOKEN_PROGRAM_ID,
+        tokenProgram: TOKEN_2022_PROGRAM_ID,
       })
       .rpc();
   }
@@ -244,12 +247,15 @@ export class LobsClient {
 
     const challengerTokenAccount = await getAssociatedTokenAddress(
       config.tokenMint,
-      this.wallet.publicKey
+      this.wallet.publicKey,
+      false,
+      TOKEN_2022_PROGRAM_ID
     );
     const treasuryTokenAccount = await getAssociatedTokenAddress(
       config.tokenMint,
       this.treasuryPda,
-      true
+      true,
+      TOKEN_2022_PROGRAM_ID
     );
 
     const tx = await this.program.methods
@@ -264,8 +270,9 @@ export class LobsClient {
         challenge: challengePda,
         challengerTokenAccount,
         treasuryTokenAccount,
+        tokenMint: config.tokenMint,
         systemProgram: SystemProgram.programId,
-        tokenProgram: TOKEN_PROGRAM_ID,
+        tokenProgram: TOKEN_2022_PROGRAM_ID,
       })
       .rpc();
 
@@ -286,16 +293,21 @@ export class LobsClient {
 
     const defenderTokenAccount = await getAssociatedTokenAddress(
       config.tokenMint,
-      this.wallet.publicKey
+      this.wallet.publicKey,
+      false,
+      TOKEN_2022_PROGRAM_ID
     );
     const challengerTokenAccount = await getAssociatedTokenAddress(
       config.tokenMint,
-      challenge.challenger
+      challenge.challenger,
+      false,
+      TOKEN_2022_PROGRAM_ID
     );
     const treasuryTokenAccount = await getAssociatedTokenAddress(
       config.tokenMint,
       this.treasuryPda,
-      true
+      true,
+      TOKEN_2022_PROGRAM_ID
     );
 
     const tx = await this.program.methods
@@ -312,7 +324,7 @@ export class LobsClient {
         treasuryTokenAccount,
         tokenMint: config.tokenMint,
         slotHashes: SLOT_HASHES_SYSVAR,
-        tokenProgram: TOKEN_PROGRAM_ID,
+        tokenProgram: TOKEN_2022_PROGRAM_ID,
       })
       .rpc();
 
@@ -344,7 +356,7 @@ export class LobsClient {
 
   /** Fetch a single Lob */
   async getLob(address: PublicKey): Promise<LobData> {
-    const a = await this.program.account.lob.fetch(address);
+    const a = await (this.program.account as any).lob.fetch(address);
     return {
       address,
       owner: a.owner,
@@ -354,6 +366,7 @@ export class LobsClient {
       strength: a.strength,
       vitality: a.vitality,
       speed: a.speed,
+      luck: a.luck,
       mood: a.mood,
       lastFed: (a.lastFed as any as BN).toNumber(),
       battlesWon: a.battlesWon,
@@ -369,8 +382,8 @@ export class LobsClient {
 
   /** Fetch all Lobs */
   async getAllLobs(): Promise<LobData[]> {
-    const accounts = await this.program.account.lob.all();
-    return accounts.map((a) => ({
+    const accounts = await (this.program.account as any).lob.all();
+    return accounts.map((a: any) => ({
       address: a.publicKey,
       owner: a.account.owner,
       name: a.account.name,
@@ -379,6 +392,7 @@ export class LobsClient {
       strength: a.account.strength,
       vitality: a.account.vitality,
       speed: a.account.speed,
+      luck: a.account.luck,
       mood: a.account.mood,
       lastFed: (a.account.lastFed as any as BN).toNumber(),
       battlesWon: a.account.battlesWon,
@@ -400,7 +414,7 @@ export class LobsClient {
 
   /** Fetch a challenge */
   async getChallenge(address: PublicKey): Promise<ChallengeData> {
-    const a = await this.program.account.battleChallenge.fetch(address);
+    const a = await (this.program.account as any).battleChallenge.fetch(address);
     return {
       address,
       challenger: a.challenger,
@@ -414,10 +428,10 @@ export class LobsClient {
 
   /** Fetch all active challenges */
   async getActiveChallenges(): Promise<ChallengeData[]> {
-    const accounts = await this.program.account.battleChallenge.all();
+    const accounts = await (this.program.account as any).battleChallenge.all();
     return accounts
-      .filter((a) => a.account.isActive)
-      .map((a) => ({
+      .filter((a: any) => a.account.isActive)
+      .map((a: any) => ({
         address: a.publicKey,
         challenger: a.account.challenger,
         challengerLob: a.account.challengerLob,
@@ -430,7 +444,7 @@ export class LobsClient {
 
   /** Fetch game config */
   async getConfig(): Promise<GameConfigData> {
-    const c = await this.program.account.gameConfig.fetch(this.configPda);
+    const c = await (this.program.account as any).gameConfig.fetch(this.configPda);
     return {
       address: this.configPda,
       authority: c.authority,

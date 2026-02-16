@@ -1,5 +1,5 @@
 use anchor_lang::prelude::*;
-use anchor_spl::token::{Mint, Token, TokenAccount};
+use anchor_spl::token_interface::{Mint, TokenAccount, TokenInterface};
 use anchor_spl::associated_token::AssociatedToken;
 
 use crate::constants::*;
@@ -10,8 +10,8 @@ pub struct Initialize<'info> {
     #[account(mut)]
     pub authority: Signer<'info>,
 
-    /// The $LOBS SPL token mint (from Pump.fun)
-    pub token_mint: Account<'info, Mint>,
+    /// The $LOBS token mint (from Pump.fun — Token-2022)
+    pub token_mint: InterfaceAccount<'info, Mint>,
 
     #[account(
         init,
@@ -35,11 +35,12 @@ pub struct Initialize<'info> {
         payer = authority,
         associated_token::mint = token_mint,
         associated_token::authority = treasury,
+        associated_token::token_program = token_program,
     )]
-    pub treasury_token_account: Account<'info, TokenAccount>,
+    pub treasury_token_account: InterfaceAccount<'info, TokenAccount>,
 
     pub system_program: Program<'info, System>,
-    pub token_program: Program<'info, Token>,
+    pub token_program: Interface<'info, TokenInterface>,
     pub associated_token_program: Program<'info, AssociatedToken>,
 }
 

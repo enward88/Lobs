@@ -68,54 +68,54 @@ pub const TREASURY_SEED: &[u8] = b"treasury";
 /// Challenge seed
 pub const CHALLENGE_SEED: &[u8] = b"challenge";
 
-/// Species stat bonuses: (str_bonus, vit_bonus, spd_bonus) as i8
+/// Species stat bonuses: (str_bonus, vit_bonus, spd_bonus, luck_bonus) as i8
 /// Organized by family:
-///   0-4:   Crustaceans
-///   5-9:   Mollusks
-///   10-14: Jellyfish
-///   15-19: Fish
-///   20-24: Coral/Flora
-///   25-29: Abyssal
-pub const SPECIES_BONUSES: [(i8, i8, i8); 30] = [
-    // === Crustaceans ===
-    ( 3,  0,  0), //  0: Snapclaw      — aggressive lobster
-    ( 0,  0,  3), //  1: Tidecrawler   — swift crab
-    ( 0,  3,  0), //  2: Ironpincer    — armored crab
-    ( 2, -1,  2), //  3: Razorshrimp   — glass shrimp
-    ( 0,  4, -2), //  4: Boulderclaw   — giant isopod
+///   0-4:   Crustaceans  (low luck — brute force)
+///   5-9:   Mollusks     (medium luck — sneaky ink escapes)
+///   10-14: Jellyfish    (high luck — ethereal, phase through attacks)
+///   15-19: Fish         (medium luck — varied)
+///   20-24: Coral/Flora  (low luck — rooted)
+///   25-29: Abyssal      (medium luck — ancient instinct)
+pub const SPECIES_BONUSES: [(i8, i8, i8, i8); 30] = [
+    // === Crustaceans ===                    STR VIT SPD LCK
+    ( 3,  0,  0, -1), //  0: Snapclaw      — aggressive lobster
+    ( 0,  0,  3,  0), //  1: Tidecrawler   — swift crab
+    ( 0,  3,  0, -1), //  2: Ironpincer    — armored crab
+    ( 2, -1,  2,  1), //  3: Razorshrimp   — glass shrimp
+    ( 0,  4, -2, -2), //  4: Boulderclaw   — giant isopod
 
     // === Mollusks ===
-    ( 2,  0,  2), //  5: Inkshade      — octopus
-    ( 0,  3,  0), //  6: Coilshell     — nautilus
-    ( 0,  4, -2), //  7: Pearlmouth    — giant clam
-    (-1,  2,  1), //  8: Spiralhorn    — sea snail
-    ( 3, -2,  0), //  9: Venomcone     — cone snail
+    ( 2,  0,  2,  2), //  5: Inkshade      — octopus (ink dodge)
+    ( 0,  3,  0,  1), //  6: Coilshell     — nautilus
+    ( 0,  4, -2, -1), //  7: Pearlmouth    — giant clam
+    (-1,  2,  1,  2), //  8: Spiralhorn    — sea snail (shell ricochet)
+    ( 3, -2,  0,  1), //  9: Venomcone     — cone snail (venom crit)
 
     // === Jellyfish ===
-    (-1,  0,  4), // 10: Driftbloom    — ethereal jelly
-    ( 3,  0,  0), // 11: Stormbell     — electric jelly
-    ( 0, -1,  3), // 12: Ghostveil     — phantom jelly
-    ( 2,  2, -1), // 13: Warbloom      — war jelly
-    ( 1,  1,  1), // 14: Moonpulse     — moon jelly
+    (-1,  0,  4,  3), // 10: Driftbloom    — ethereal jelly (phase through)
+    ( 3,  0,  0,  1), // 11: Stormbell     — electric jelly
+    ( 0, -1,  3,  4), // 12: Ghostveil     — phantom jelly (highest luck)
+    ( 2,  2, -1,  0), // 13: Warbloom      — war jelly
+    ( 1,  1,  1,  2), // 14: Moonpulse     — moon jelly (lunar fortune)
 
     // === Fish ===
-    ( 4,  0, -2), // 15: Deepmaw       — anglerfish
-    ( 0,  0,  3), // 16: Flashfin      — lanternfish
-    ( 3,  0, -1), // 17: Gulpjaw       — gulper eel
-    (-1,  0,  3), // 18: Mirrorfin     — hatchetfish
-    ( 0,  3,  0), // 19: Stonescale    — coelacanth
+    ( 4,  0, -2,  0), // 15: Deepmaw       — anglerfish
+    ( 0,  0,  3,  2), // 16: Flashfin      — lanternfish (flash crit)
+    ( 3,  0, -1,  0), // 17: Gulpjaw       — gulper eel
+    (-1,  0,  3,  3), // 18: Mirrorfin     — hatchetfish (mirror dodge)
+    ( 0,  3,  0, -1), // 19: Stonescale    — coelacanth
 
     // === Coral/Flora ===
-    ( 1,  1,  1), // 20: Reefling      — coral symbiote
-    ( 3,  0, -2), // 21: Thorncoil     — thorny coral
-    ( 2,  2, -1), // 22: Bloomsire     — anemone
-    (-2,  3,  0), // 23: Tendrilwrap   — kelp creature
-    ( 0,  2,  1), // 24: Sporeling     — deep fungus
+    ( 1,  1,  1,  0), // 20: Reefling      — coral symbiote
+    ( 3,  0, -2, -1), // 21: Thorncoil     — thorny coral
+    ( 2,  2, -1,  0), // 22: Bloomsire     — anemone
+    (-2,  3,  0,  1), // 23: Tendrilwrap   — kelp creature
+    ( 0,  2,  1,  2), // 24: Sporeling     — deep fungus (spore luck)
 
     // === Abyssal ===
-    ( 4,  0, -1), // 25: Voidmaw       — abyssal predator
-    ( 0,  2,  2), // 26: Pressureking  — barreleye fish
-    ( 0,  4, -1), // 27: Darkdrifter   — sea cucumber
-    ( 2,  0,  2), // 28: Abysswatcher  — giant squid
-    ( 3,  1,  0), // 29: Depthcrown    — sea dragon
+    ( 4,  0, -1,  1), // 25: Voidmaw       — abyssal predator
+    ( 0,  2,  2,  1), // 26: Pressureking  — barreleye fish
+    ( 0,  4, -1, -1), // 27: Darkdrifter   — sea cucumber
+    ( 2,  0,  2,  2), // 28: Abysswatcher  — giant squid (tentacle crit)
+    ( 3,  1,  0,  1), // 29: Depthcrown    — sea dragon
 ];

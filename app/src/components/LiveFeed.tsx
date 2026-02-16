@@ -1,5 +1,6 @@
 import { useLobs, LobAccount } from "../hooks/useLobs";
 import { CreatureDot } from "./CreatureArt";
+import { BattleShowcase } from "./BattleShowcase";
 import {
   SPECIES_NAME,
   SPECIES_FAMILY,
@@ -111,6 +112,12 @@ export function LiveFeed() {
   const events = deriveActivity(lobs);
 
   return (
+    <div>
+      {/* Live Battle */}
+      <div className="mb-6">
+        <BattleShowcase />
+      </div>
+
     <div className="rounded-2xl bg-abyss-900/30 border border-abyss-700/15 overflow-hidden glow-border">
       <div className="px-5 py-3 border-b border-abyss-700/20 flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -166,6 +173,7 @@ export function LiveFeed() {
           ))}
         </div>
       )}
+    </div>
     </div>
   );
 }

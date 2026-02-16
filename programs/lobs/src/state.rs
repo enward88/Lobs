@@ -41,6 +41,8 @@ pub struct Lob {
     pub vitality: u8,
     /// Base speed stat
     pub speed: u8,
+    /// Base luck stat (affects crit chance and dodge chance)
+    pub luck: u8,
     /// Current mood (0-100)
     pub mood: u8,
     /// Last fed timestamp
@@ -106,6 +108,14 @@ impl Lob {
     pub fn effective_speed(&self) -> u64 {
         let multiplier = EVOLUTION_MULTIPLIERS[self.evolution_stage as usize] as u64;
         let base = self.speed as u64;
+        base.checked_mul(multiplier)
+            .map(|v| v / 10000)
+            .unwrap_or(0)
+    }
+
+    pub fn effective_luck(&self) -> u64 {
+        let multiplier = EVOLUTION_MULTIPLIERS[self.evolution_stage as usize] as u64;
+        let base = self.luck as u64;
         base.checked_mul(multiplier)
             .map(|v| v / 10000)
             .unwrap_or(0)

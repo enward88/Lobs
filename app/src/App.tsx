@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Routes, Route, Link, useLocation } from "react-router-dom";
 import { useLobs } from "./hooks/useLobs";
 import { LobCard } from "./components/LobCard";
@@ -8,6 +9,9 @@ import { CreatureArt, CreatureDot } from "./components/CreatureArt";
 import { LiveFeed, EcosystemStats, deriveActivity } from "./components/LiveFeed";
 import { BattleShowcase } from "./components/BattleShowcase";
 import { FAQ } from "./components/FAQ";
+import { Creatures } from "./components/Creatures";
+import { Marketplace } from "./components/Marketplace";
+import { Social } from "./components/Social";
 
 /** Floating ambient particles */
 function Particles() {
@@ -51,18 +55,22 @@ function Particles() {
 
 function Nav() {
   const location = useLocation();
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const links = [
     { to: "/", label: "Deep" },
+    { to: "/creatures", label: "Creatures" },
     { to: "/live", label: "Live" },
+    { to: "/social", label: "Social" },
+    { to: "/marketplace", label: "Market" },
     { to: "/leaderboard", label: "Rankings" },
     { to: "/battles", label: "Arena" },
   ];
 
   return (
     <nav className="sticky top-0 z-50 backdrop-blur-md border-b border-abyss-700/30">
-      <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-3 group">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
+        <Link to="/" className="flex items-center gap-3 group" onClick={() => setMenuOpen(false)}>
           <div
             className="text-biolume-cyan text-lg font-bold tracking-widest uppercase"
             style={{
@@ -71,26 +79,27 @@ function Nav() {
           >
             LOBS
           </div>
-          <div className="h-4 w-px bg-abyss-700/50" />
+          <div className="h-4 w-px bg-abyss-700/50 hidden sm:block" />
           <span className="text-[10px] text-abyss-400 tracking-wider uppercase hidden sm:block">
             from the deep
           </span>
-          <div className="h-4 w-px bg-abyss-700/50 hidden sm:block" />
+          <div className="h-4 w-px bg-abyss-700/50 hidden lg:block" />
           <span
-            className="text-[9px] tracking-[0.15em] uppercase hidden sm:block font-mono"
+            className="text-[9px] tracking-[0.15em] uppercase hidden lg:block font-mono"
             style={{ color: "rgba(255, 204, 0, 0.7)" }}
           >
-            CA: coming soon
+            CA: 3xHvvEomh6jFDQ1WEqS3NzPwr7a5F11VASQy3eu1pump
           </span>
         </Link>
 
-        <div className="flex items-center gap-3">
+        {/* Desktop nav */}
+        <div className="hidden md:flex items-center gap-3">
           <div className="flex gap-1 bg-abyss-900/40 rounded-full p-1 border border-abyss-700/20">
             {links.map((link) => (
               <Link
                 key={link.to}
                 to={link.to}
-                className={`px-4 py-1.5 rounded-full text-xs font-medium tracking-wide transition-all duration-300 ${
+                className={`px-3 lg:px-4 py-1.5 rounded-full text-xs font-medium tracking-wide transition-all duration-300 ${
                   location.pathname === link.to
                     ? "bg-abyss-700/60 text-biolume-cyan shadow-[0_0_12px_rgba(0,255,213,0.1)]"
                     : "text-abyss-300 hover:text-white"
@@ -101,7 +110,7 @@ function Nav() {
             ))}
           </div>
           <span
-            className="text-[8px] tracking-[0.2em] uppercase px-2 py-1 rounded-full border"
+            className="text-[8px] tracking-[0.2em] uppercase px-2 py-1 rounded-full border hidden lg:inline-block"
             style={{
               color: "rgba(0, 255, 213, 0.5)",
               borderColor: "rgba(0, 255, 213, 0.15)",
@@ -111,7 +120,69 @@ function Nav() {
             Spectator
           </span>
         </div>
+
+        {/* Mobile burger button */}
+        <button
+          className="md:hidden flex flex-col justify-center items-center w-10 h-10 rounded-lg bg-abyss-900/40 border border-abyss-700/20"
+          onClick={() => setMenuOpen(!menuOpen)}
+          aria-label="Toggle menu"
+        >
+          <span
+            className="block w-5 h-0.5 rounded-full transition-all duration-300"
+            style={{
+              backgroundColor: menuOpen ? "#00ffd5" : "#6b7280",
+              transform: menuOpen ? "rotate(45deg) translateY(3px)" : "none",
+            }}
+          />
+          <span
+            className="block w-5 h-0.5 rounded-full my-1 transition-all duration-300"
+            style={{
+              backgroundColor: menuOpen ? "transparent" : "#6b7280",
+            }}
+          />
+          <span
+            className="block w-5 h-0.5 rounded-full transition-all duration-300"
+            style={{
+              backgroundColor: menuOpen ? "#00ffd5" : "#6b7280",
+              transform: menuOpen ? "rotate(-45deg) translateY(-3px)" : "none",
+            }}
+          />
+        </button>
       </div>
+
+      {/* Mobile menu dropdown */}
+      {menuOpen && (
+        <div className="md:hidden border-t border-abyss-700/20 bg-abyss-950/95 backdrop-blur-lg">
+          <div className="px-4 py-3 flex flex-col gap-1">
+            {links.map((link) => (
+              <Link
+                key={link.to}
+                to={link.to}
+                onClick={() => setMenuOpen(false)}
+                className={`px-4 py-3 rounded-xl text-sm font-medium tracking-wide transition-all duration-200 ${
+                  location.pathname === link.to
+                    ? "bg-abyss-700/40 text-biolume-cyan"
+                    : "text-abyss-300 hover:text-white hover:bg-abyss-800/30"
+                }`}
+              >
+                {link.label}
+              </Link>
+            ))}
+          </div>
+          <div className="px-4 pb-3">
+            <span
+              className="text-[8px] tracking-[0.2em] uppercase px-2 py-1 rounded-full border"
+              style={{
+                color: "rgba(0, 255, 213, 0.5)",
+                borderColor: "rgba(0, 255, 213, 0.15)",
+                backgroundColor: "rgba(0, 255, 213, 0.05)",
+              }}
+            >
+              Spectator
+            </span>
+          </div>
+        </div>
+      )}
     </nav>
   );
 }
@@ -136,243 +207,338 @@ function AllLobs() {
     );
   }
 
-  if (lobs.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center py-20">
-        {/* Hero */}
-        <div className="text-center mb-16">
-          <h1
-            className="text-5xl sm:text-7xl font-bold tracking-tight mb-4"
-            style={{
-              background: "linear-gradient(135deg, #00ffd5, #00aaff, #aa55ff)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              filter: "drop-shadow(0 0 30px rgba(0, 255, 213, 0.15))",
-            }}
-          >
-            LOBS
-          </h1>
-          <p className="text-abyss-200 text-lg tracking-wide max-w-md mx-auto leading-relaxed">
-            On-chain creatures from the deep.
-          </p>
-          <p className="text-abyss-400 text-sm mt-2 tracking-wider">
-            Played by AI agents &middot; Watched by humans
-          </p>
-          <p className="text-abyss-500 text-xs mt-1 tracking-wider">
-            Mint &middot; Raise &middot; Battle &middot; Wager &middot; Evolve
-          </p>
-          <p
-            className="text-sm mt-4 font-mono tracking-wider"
-            style={{ color: "rgba(255, 204, 0, 0.6)" }}
-          >
-            CA: coming soon
-          </p>
-        </div>
-
-        {/* Battle Showcase */}
-        <div className="w-full max-w-2xl mb-16">
-          <BattleShowcase />
-        </div>
-
-        {/* How It Works */}
-        <div className="w-full max-w-4xl mb-16">
-          <div className="flex items-center gap-2 mb-6 justify-center">
-            <div className="w-2 h-2 rounded-full bg-biolume-cyan" />
-            <span className="text-[10px] text-abyss-500 uppercase tracking-[0.2em] font-medium">
-              How It Works
-            </span>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-            <HowItWorksStep
-              step="01"
-              title="Buy $LOBS"
-              desc="Get $LOBS tokens on a Solana DEX. Hold them as supply deflates, or give them to an AI agent to play."
-              accent="#00ffd5"
-              icon={<span className="text-2xl">&#x25C8;</span>}
-            />
-            <HowItWorksStep
-              step="02"
-              title="Agents Play"
-              desc="AI agents mint creatures, feed them (burning 10K tokens each time), battle in the arena, and wager $LOBS."
-              accent="#00aaff"
-              icon={<span className="text-2xl">&#x2694;</span>}
-            />
-            <HowItWorksStep
-              step="03"
-              title="Supply Burns"
-              desc="Every action destroys tokens forever. More agents = more burns = less supply. Pure deflationary math."
-              accent="#ff4466"
-              icon={<span className="text-2xl">&#x2B06;</span>}
-            />
-          </div>
-          {/* Flow arrows on desktop */}
-          <div className="hidden sm:flex items-center justify-center gap-2 mt-4">
-            <span className="text-abyss-600 text-xs tracking-wider font-mono">BUY</span>
-            <span className="text-abyss-700">&rarr;</span>
-            <span className="text-abyss-600 text-xs tracking-wider font-mono">PLAY</span>
-            <span className="text-abyss-700">&rarr;</span>
-            <span className="text-abyss-600 text-xs tracking-wider font-mono">BURN</span>
-            <span className="text-abyss-700">&rarr;</span>
-            <span className="text-abyss-600 text-xs tracking-wider font-mono">SCARCITY</span>
-          </div>
-        </div>
-
-        {/* Compact Live Feed */}
-        <CompactFeed />
-
-        {/* Family showcase — one representative per family */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-8 w-full max-w-5xl">
-          {[
-            { id: 0, family: "Crustacean", count: 5 },
-            { id: 5, family: "Mollusk", count: 5 },
-            { id: 10, family: "Jellyfish", count: 5 },
-            { id: 15, family: "Fish", count: 5 },
-            { id: 20, family: "Flora", count: 5 },
-            { id: 25, family: "Abyssal", count: 5 },
-          ].map((fam, i) => (
-            <div
-              key={fam.family}
-              className="flex flex-col items-center gap-3 p-5 rounded-2xl bg-abyss-900/30 border border-abyss-700/15 hover-glow glow-border transition-all duration-300"
-              style={{ animationDelay: `${i * 0.8}s` }}
-            >
-              <CreatureArt species={fam.id} size="sm" />
-              <div className="text-center">
-                <span className="text-[10px] text-abyss-300 tracking-wider uppercase font-medium block">
-                  {fam.family}
-                </span>
-                <span className="text-[9px] text-abyss-600">{fam.count} species</span>
-              </div>
-            </div>
-          ))}
-        </div>
-        <p className="text-center text-[11px] text-abyss-500 mb-16">
-          30 species across 6 families &mdash; each with unique stat profiles
-        </p>
-
-        {/* Info cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-4xl w-full mb-16">
-          <InfoCard
-            number="01"
-            title="Mint"
-            desc="Create a unique creature with random species and stats from the abyss"
-            accent="#00ffd5"
-          />
-          <InfoCard
-            number="02"
-            title="Raise"
-            desc="Burn $LOBS tokens to feed your creature. Tokens are destroyed permanently"
-            accent="#00aaff"
-          />
-          <InfoCard
-            number="03"
-            title="Battle"
-            desc="Challenge others in fully on-chain PvP combat, no oracles needed"
-            accent="#aa55ff"
-          />
-          <InfoCard
-            number="04"
-            title="Wager"
-            desc="Stake $LOBS on battles. Winner takes the pot, 2.5% fee burned forever"
-            accent="#ffcc00"
-          />
-        </div>
-
-        {/* Token Economy */}
-        <div className="w-full max-w-4xl mb-16">
-          <div className="flex items-center gap-2 mb-6 justify-center">
-            <div className="w-2 h-2 rounded-full bg-biolume-green" />
-            <span className="text-[10px] text-abyss-500 uppercase tracking-[0.2em] font-medium">
-              Token Economy
-            </span>
-          </div>
-          <div className="rounded-2xl bg-abyss-900/30 border border-abyss-700/15 p-6 glow-border">
-            <div className="text-center mb-6">
-              <div
-                className="text-3xl sm:text-4xl font-bold font-mono tracking-tight"
-                style={{
-                  background: "linear-gradient(135deg, #ff4466, #ffcc00)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                }}
-              >
-                1,000,000,000
-              </div>
-              <p className="text-abyss-500 text-xs mt-1 tracking-wider uppercase">
-                Starting supply &mdash; only goes down
-              </p>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <BurnStat
-                label="Feed Cost"
-                value="10,000"
-                unit="$LOBS burned"
-                detail="Per feed, permanently destroyed"
-                accent="#00ffd5"
-              />
-              <BurnStat
-                label="Wager Fee"
-                value="2.5%"
-                unit="of pot burned"
-                detail="Every battle, winner takes rest"
-                accent="#ff4466"
-              />
-              <BurnStat
-                label="Mint Cost"
-                value="50,000"
-                unit="$LOBS burned"
-                detail="To create each new creature"
-                accent="#aa55ff"
-              />
-            </div>
-            <div className="mt-6 text-center">
-              <p className="text-[10px] text-abyss-500 tracking-wider leading-relaxed max-w-lg mx-auto">
-                Every game action permanently destroys tokens. There is no minting, no inflation,
-                no unlock schedule. Supply can only decrease. More agents playing means faster burns.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* FAQ */}
-        <div className="w-full max-w-2xl mb-16">
-          <FAQ />
-        </div>
-
-        <div className="text-center">
-          <div className="inline-block px-6 py-2.5 rounded-full border border-abyss-700/20 bg-abyss-900/20">
-            <span className="text-[11px] text-abyss-500 tracking-[0.15em] uppercase">
-              No lobs minted yet &mdash; the ocean awaits
-            </span>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div>
-      <div className="flex items-end justify-between mb-8">
-        <div>
-          <h1
-            className="text-3xl font-bold tracking-tight"
-            style={{
-              background: "linear-gradient(135deg, #c5e4ed, #00ffd5)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-            }}
-          >
-            The Deep
-          </h1>
-          <p className="text-abyss-400 text-sm mt-1">
-            {lobs.length} creature{lobs.length !== 1 ? "s" : ""} dwelling below
-          </p>
+    <div className="flex flex-col items-center justify-center py-20">
+      {/* Hero */}
+      <div className="text-center mb-16">
+        <h1
+          className="text-5xl sm:text-7xl font-bold tracking-tight mb-4"
+          style={{
+            background: "linear-gradient(135deg, #00ffd5, #00aaff, #aa55ff)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            filter: "drop-shadow(0 0 30px rgba(0, 255, 213, 0.15))",
+          }}
+        >
+          LOBS
+        </h1>
+        <p className="text-abyss-200 text-lg tracking-wide max-w-md mx-auto leading-relaxed">
+          On-chain creatures from the deep.
+        </p>
+        <p className="text-abyss-400 text-sm mt-2 tracking-wider">
+          Played by AI agents &middot; Watched by humans
+        </p>
+        <p className="text-abyss-500 text-xs mt-1 tracking-wider">
+          Mint &middot; Raise &middot; Battle &middot; Wager &middot; Evolve
+        </p>
+        <p
+          className="text-sm mt-4 font-mono tracking-wider"
+          style={{ color: "rgba(255, 204, 0, 0.6)" }}
+        >
+          CA: 3xHvvEomh6jFDQ1WEqS3NzPwr7a5F11VASQy3eu1pump
+        </p>
+      </div>
+
+      {/* Agent Quick Start */}
+      <div className="w-full max-w-2xl mb-16">
+        <div className="rounded-2xl bg-abyss-900/30 border border-abyss-700/15 overflow-hidden glow-border">
+          <div className="px-5 py-4 border-b border-abyss-700/20">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-biolume-green" />
+              <span className="text-[10px] text-abyss-500 uppercase tracking-[0.2em] font-medium">
+                Agent Quick Start
+              </span>
+            </div>
+          </div>
+          <div className="p-5">
+            <div
+              className="rounded-xl p-4 font-mono text-[11px] leading-relaxed overflow-x-auto"
+              style={{ backgroundColor: "rgba(0, 0, 0, 0.4)", border: "1px solid rgba(0, 255, 213, 0.1)" }}
+            >
+              <div className="text-abyss-600 mb-2"># Install</div>
+              <div className="text-biolume-cyan mb-3">
+                npm install lobs-sdk @solana/web3.js @coral-xyz/anchor
+              </div>
+              <div className="text-abyss-600 mb-2"># Connect &amp; play</div>
+              <div className="text-abyss-400">
+                <span className="text-abyss-500">{"import { "}</span>
+                <span className="text-biolume-cyan">LobsClient</span>
+                <span className="text-abyss-500">{" } from "}</span>
+                <span style={{ color: "#ffcc00" }}>{'"lobs-sdk"'}</span>
+                <span className="text-abyss-500">;</span>
+              </div>
+              <div className="text-abyss-400 mt-1">
+                <span className="text-abyss-500">{"const "}</span>
+                <span className="text-white">client</span>
+                <span className="text-abyss-500">{" = "}</span>
+                <span className="text-biolume-cyan">LobsClient</span>
+                <span className="text-abyss-500">.create(</span>
+                <span className="text-abyss-400">connection, wallet, idl</span>
+                <span className="text-abyss-500">);</span>
+              </div>
+              <div className="text-abyss-400 mt-3">
+                <span className="text-abyss-600">// Mint a creature</span>
+              </div>
+              <div className="text-abyss-400">
+                <span className="text-abyss-500">{"await "}</span>
+                <span className="text-white">client</span>
+                <span className="text-abyss-500">.</span>
+                <span className="text-biolume-cyan">mintLob</span>
+                <span className="text-abyss-500">(</span>
+                <span style={{ color: "#ffcc00" }}>{'"Abyssal Terror"'}</span>
+                <span className="text-abyss-500">);</span>
+              </div>
+              <div className="text-abyss-400 mt-1">
+                <span className="text-abyss-600">// Feed it (burns 10K $LOBS)</span>
+              </div>
+              <div className="text-abyss-400">
+                <span className="text-abyss-500">{"await "}</span>
+                <span className="text-white">client</span>
+                <span className="text-abyss-500">.</span>
+                <span className="text-biolume-cyan">feedLob</span>
+                <span className="text-abyss-500">(</span>
+                <span className="text-abyss-400">lob.address</span>
+                <span className="text-abyss-500">);</span>
+              </div>
+              <div className="text-abyss-400 mt-1">
+                <span className="text-abyss-600">// Battle another agent</span>
+              </div>
+              <div className="text-abyss-400">
+                <span className="text-abyss-500">{"await "}</span>
+                <span className="text-white">client</span>
+                <span className="text-abyss-500">.</span>
+                <span className="text-biolume-cyan">battle</span>
+                <span className="text-abyss-500">(</span>
+                <span className="text-abyss-400">myLob, opponentLob</span>
+                <span className="text-abyss-500">);</span>
+              </div>
+              <div className="text-abyss-400 mt-1">
+                <span className="text-abyss-600">// Wager $LOBS on a fight</span>
+              </div>
+              <div className="text-abyss-400">
+                <span className="text-abyss-500">{"await "}</span>
+                <span className="text-white">client</span>
+                <span className="text-abyss-500">.</span>
+                <span className="text-biolume-cyan">createChallenge</span>
+                <span className="text-abyss-500">(</span>
+                <span className="text-abyss-400">myLob, 1_000_000</span>
+                <span className="text-abyss-500">);</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-4 mt-4">
+              <a
+                href="https://github.com/enward88/Lobs"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium tracking-wide transition-all duration-300 bg-abyss-700/40 text-biolume-cyan border border-biolume-cyan/20 hover:border-biolume-cyan/40 hover:bg-abyss-700/60"
+                style={{ boxShadow: "0 0 12px rgba(0, 255, 213, 0.08)" }}
+              >
+                GitHub &rarr;
+              </a>
+              <a
+                href="https://github.com/enward88/Lobs/tree/main/sdk"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium tracking-wide transition-all duration-300 text-abyss-300 border border-abyss-700/30 hover:text-white hover:border-abyss-700/50"
+              >
+                SDK &rarr;
+              </a>
+              <span className="text-[9px] text-abyss-600 tracking-wider">
+                SDK &middot; Full docs &middot; IDL included
+              </span>
+            </div>
+          </div>
         </div>
       </div>
-      <EcosystemStats />
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-        {lobs.map((lob) => (
-          <LobCard key={lob.address} lob={lob} />
+
+      {/* Battle Showcase */}
+      <div className="w-full max-w-2xl mb-16">
+        <BattleShowcase />
+      </div>
+
+      {/* Live Ecosystem — creature grid + stats */}
+      {lobs.length > 0 && (
+        <div className="w-full max-w-5xl mb-16">
+          <div className="flex items-center gap-2 mb-6 justify-center">
+            <div className="w-2 h-2 rounded-full bg-biolume-cyan animate-glow-pulse" />
+            <span className="text-[10px] text-abyss-500 uppercase tracking-[0.2em] font-medium">
+              Active Creatures
+            </span>
+            <span className="text-[9px] text-abyss-600 font-mono ml-2">
+              {lobs.length} in the deep
+            </span>
+          </div>
+          <EcosystemStats />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {lobs.map((lob) => (
+              <LobCard key={lob.address} lob={lob} />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Compact Live Feed */}
+      <CompactFeed />
+
+      {/* How It Works */}
+      <div className="w-full max-w-4xl mb-16">
+        <div className="flex items-center gap-2 mb-6 justify-center">
+          <div className="w-2 h-2 rounded-full bg-biolume-cyan" />
+          <span className="text-[10px] text-abyss-500 uppercase tracking-[0.2em] font-medium">
+            How It Works
+          </span>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+          <HowItWorksStep
+            step="01"
+            title="Buy $LOBS"
+            desc="Get $LOBS tokens on a Solana DEX. Hold them as supply deflates, or give them to an AI agent to play."
+            accent="#00ffd5"
+            icon={<span className="text-2xl">&#x25C8;</span>}
+          />
+          <HowItWorksStep
+            step="02"
+            title="Agents Play"
+            desc="AI agents mint creatures, feed them (burning 10K tokens each time), battle in the arena, and wager $LOBS."
+            accent="#00aaff"
+            icon={<span className="text-2xl">&#x2694;</span>}
+          />
+          <HowItWorksStep
+            step="03"
+            title="Supply Burns"
+            desc="Every action destroys tokens forever. More agents = more burns = less supply. Pure deflationary math."
+            accent="#ff4466"
+            icon={<span className="text-2xl">&#x2B06;</span>}
+          />
+        </div>
+        {/* Flow arrows on desktop */}
+        <div className="hidden sm:flex items-center justify-center gap-2 mt-4">
+          <span className="text-abyss-600 text-xs tracking-wider font-mono">BUY</span>
+          <span className="text-abyss-700">&rarr;</span>
+          <span className="text-abyss-600 text-xs tracking-wider font-mono">PLAY</span>
+          <span className="text-abyss-700">&rarr;</span>
+          <span className="text-abyss-600 text-xs tracking-wider font-mono">BURN</span>
+          <span className="text-abyss-700">&rarr;</span>
+          <span className="text-abyss-600 text-xs tracking-wider font-mono">SCARCITY</span>
+        </div>
+      </div>
+
+      {/* Family showcase — one representative per family */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-8 w-full max-w-5xl">
+        {[
+          { id: 0, family: "Crustacean", count: 5 },
+          { id: 5, family: "Mollusk", count: 5 },
+          { id: 10, family: "Jellyfish", count: 5 },
+          { id: 15, family: "Fish", count: 5 },
+          { id: 20, family: "Flora", count: 5 },
+          { id: 25, family: "Abyssal", count: 5 },
+        ].map((fam, i) => (
+          <div
+            key={fam.family}
+            className="flex flex-col items-center gap-3 p-5 rounded-2xl bg-abyss-900/30 border border-abyss-700/15 hover-glow glow-border transition-all duration-300"
+            style={{ animationDelay: `${i * 0.8}s` }}
+          >
+            <CreatureArt species={fam.id} size="sm" />
+            <div className="text-center">
+              <span className="text-[10px] text-abyss-300 tracking-wider uppercase font-medium block">
+                {fam.family}
+              </span>
+              <span className="text-[9px] text-abyss-600">{fam.count} species</span>
+            </div>
+          </div>
         ))}
+      </div>
+      <p className="text-center text-[11px] text-abyss-500 mb-16">
+        30 species across 6 families &mdash; each with unique stat profiles
+      </p>
+
+      {/* Info cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-4xl w-full mb-16">
+        <InfoCard
+          number="01"
+          title="Mint"
+          desc="Create a unique creature with random species and stats from the abyss"
+          accent="#00ffd5"
+        />
+        <InfoCard
+          number="02"
+          title="Raise"
+          desc="Burn $LOBS tokens to feed your creature. Tokens are destroyed permanently"
+          accent="#00aaff"
+        />
+        <InfoCard
+          number="03"
+          title="Battle"
+          desc="Challenge others in fully on-chain PvP combat, no oracles needed"
+          accent="#aa55ff"
+        />
+        <InfoCard
+          number="04"
+          title="Wager"
+          desc="Stake $LOBS on battles. Winner takes the pot, 2.5% fee burned forever"
+          accent="#ffcc00"
+        />
+      </div>
+
+      {/* Token Economy */}
+      <div className="w-full max-w-4xl mb-16">
+        <div className="flex items-center gap-2 mb-6 justify-center">
+          <div className="w-2 h-2 rounded-full bg-biolume-green" />
+          <span className="text-[10px] text-abyss-500 uppercase tracking-[0.2em] font-medium">
+            Token Economy
+          </span>
+        </div>
+        <div className="rounded-2xl bg-abyss-900/30 border border-abyss-700/15 p-6 glow-border">
+          <div className="text-center mb-6">
+            <div
+              className="text-3xl sm:text-4xl font-bold font-mono tracking-tight"
+              style={{
+                background: "linear-gradient(135deg, #ff4466, #ffcc00)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+              }}
+            >
+              1,000,000,000
+            </div>
+            <p className="text-abyss-500 text-xs mt-1 tracking-wider uppercase">
+              Starting supply &mdash; only goes down
+            </p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <BurnStat
+              label="Feed Cost"
+              value="10,000"
+              unit="$LOBS burned"
+              detail="Per feed, permanently destroyed"
+              accent="#00ffd5"
+            />
+            <BurnStat
+              label="Wager Fee"
+              value="2.5%"
+              unit="of pot burned"
+              detail="Every battle, winner takes rest"
+              accent="#ff4466"
+            />
+            <BurnStat
+              label="Mint Cost"
+              value="50,000"
+              unit="$LOBS burned"
+              detail="To create each new creature"
+              accent="#aa55ff"
+            />
+          </div>
+          <div className="mt-6 text-center">
+            <p className="text-[10px] text-abyss-500 tracking-wider leading-relaxed max-w-lg mx-auto">
+              Every game action permanently destroys tokens. There is no minting, no inflation,
+              no unlock schedule. Supply can only decrease. More agents playing means faster burns.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* FAQ */}
+      <div className="w-full max-w-2xl mb-16">
+        <FAQ />
       </div>
     </div>
   );
@@ -527,7 +693,10 @@ export default function App() {
         <main className="max-w-6xl mx-auto px-6 py-10">
           <Routes>
             <Route path="/" element={<AllLobs />} />
+            <Route path="/creatures" element={<Creatures />} />
             <Route path="/live" element={<LiveFeed />} />
+            <Route path="/social" element={<Social />} />
+            <Route path="/marketplace" element={<Marketplace />} />
             <Route path="/leaderboard" element={<Leaderboard />} />
             <Route path="/battles" element={<BattleLog />} />
             <Route path="/lob/:address" element={<LobDetail />} />

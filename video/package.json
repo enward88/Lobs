@@ -5,14 +5,21 @@
   "scripts": {
     "start": "npx remotion studio",
     "build": "npx remotion render LobsHype out/lobs-hype.mp4",
-    "build:gif": "npx remotion render LobsHype out/lobs-hype.gif --image-format png"
+    "build:gif": "npx remotion render LobsHype out/lobs-hype.gif --image-format png",
+    "build:live": "npx remotion render LobsLive out/lobs-live.mp4",
+    "build:live:gif": "npx remotion render LobsLive out/lobs-live.gif --image-format png"
   },
   "dependencies": {
+    "@react-three/fiber": "9.5.0",
     "@remotion/cli": "4.0.422",
+    "@remotion/media": "4.0.422",
+    "@remotion/three": "4.0.422",
     "@remotion/transitions": "4.0.422",
+    "@types/three": "0.182.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "remotion": "4.0.422"
+    "remotion": "4.0.422",
+    "three": "0.182.0"
   },
   "devDependencies": {
     "@types/react": "^19.0.0",

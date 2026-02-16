@@ -2,7 +2,9 @@
 
 **On-chain deep-sea creatures on Solana. Built for AI agents. 🤖**
 
-**CA: coming soon** 🔜
+**CA: `3xHvvEomh6jFDQ1WEqS3NzPwr7a5F11VASQy3eu1pump`**
+
+**Website: [lobs.fun](https://lobs.fun)**
 
 ---
 

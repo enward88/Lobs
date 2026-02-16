@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program::sysvar::slot_hashes;
-use anchor_spl::token::{self, Burn, Mint, Token, TokenAccount, Transfer};
+use anchor_spl::token_interface::{self, Burn, Mint, TokenAccount, TokenInterface, TransferChecked};
 
 use crate::constants::*;
 use crate::errors::LobsError;
@@ -51,7 +51,7 @@ pub struct AcceptChallenge<'info> {
         mut,
         constraint = treasury_token_account.mint == config.token_mint,
     )]
-    pub treasury_token_account: Account<'info, TokenAccount>,
+    pub treasury_token_account: InterfaceAccount<'info, TokenAccount>,
 
     /// Defender's $LOBS token account (matches wager, receives winnings if winner)
     #[account(
@@ -59,7 +59,7 @@ pub struct AcceptChallenge<'info> {
         constraint = defender_token_account.owner == defender.key(),
         constraint = defender_token_account.mint == config.token_mint,
     )]
-    pub defender_token_account: Account<'info, TokenAccount>,
+    pub defender_token_account: InterfaceAccount<'info, TokenAccount>,
 
     /// Challenger's $LOBS token account (receives winnings if winner)
     #[account(
@@ -67,20 +67,20 @@ pub struct AcceptChallenge<'info> {
         constraint = challenger_token_account.owner == challenge.challenger,
         constraint = challenger_token_account.mint == config.token_mint,
     )]
-    pub challenger_token_account: Account<'info, TokenAccount>,
+    pub challenger_token_account: InterfaceAccount<'info, TokenAccount>,
 
     /// $LOBS token mint (required for burning the arena fee)
     #[account(
         mut,
         constraint = token_mint.key() == config.token_mint,
     )]
-    pub token_mint: Account<'info, Mint>,
+    pub token_mint: InterfaceAccount<'info, Mint>,
 
     /// CHECK: SlotHashes sysvar for tiebreaker
     #[account(address = slot_hashes::id())]
     pub slot_hashes: AccountInfo<'info>,
 
-    pub token_program: Program<'info, Token>,
+    pub token_program: Interface<'info, TokenInterface>,
 }
 
 pub fn handler(ctx: Context<AcceptChallenge>) -> Result<()> {
@@ -97,16 +97,18 @@ pub fn handler(ctx: Context<AcceptChallenge>) -> Result<()> {
     let wager = challenge.wager;
 
     // Defender matches the wager -> treasury
-    token::transfer(
+    token_interface::transfer_checked(
         CpiContext::new(
             ctx.accounts.token_program.to_account_info(),
-            Transfer {
+            TransferChecked {
                 from: ctx.accounts.defender_token_account.to_account_info(),
+                mint: ctx.accounts.token_mint.to_account_info(),
                 to: ctx.accounts.treasury_token_account.to_account_info(),
                 authority: ctx.accounts.defender.to_account_info(),
             },
         ),
         wager,
+        TOKEN_DECIMALS,
     )?;
 
     // === Resolve battle (same logic as free battle) ===
@@ -116,33 +118,41 @@ pub fn handler(ctx: Context<AcceptChallenge>) -> Result<()> {
     let c_str = ctx.accounts.challenger_lob.effective_strength();
     let c_vit = ctx.accounts.challenger_lob.effective_vitality();
     let c_spd = ctx.accounts.challenger_lob.effective_speed();
+    let c_lck = ctx.accounts.challenger_lob.effective_luck();
 
     let d_str = ctx.accounts.defender_lob.effective_strength();
     let d_vit = ctx.accounts.defender_lob.effective_vitality();
     let d_spd = ctx.accounts.defender_lob.effective_speed();
+    let d_lck = ctx.accounts.defender_lob.effective_luck();
 
     let mut c_hp = c_vit;
     let mut d_hp = d_vit;
     let c_damage = c_str.max(1);
     let d_damage = d_str.max(1);
 
-    for _ in 0..100 {
+    let data_len = slot_hashes_data.len().max(1);
+
+    for round in 0u64..100 {
         if c_spd >= d_spd {
-            d_hp = d_hp.saturating_sub(c_damage);
+            let actual = resolve_attack(c_damage, c_lck, d_lck, &slot_hashes_data, data_len, round, 0);
+            d_hp = d_hp.saturating_sub(actual);
             if d_hp == 0 { break; }
-            c_hp = c_hp.saturating_sub(d_damage);
+            let actual = resolve_attack(d_damage, d_lck, c_lck, &slot_hashes_data, data_len, round, 2);
+            c_hp = c_hp.saturating_sub(actual);
             if c_hp == 0 { break; }
         } else {
-            c_hp = c_hp.saturating_sub(d_damage);
+            let actual = resolve_attack(d_damage, d_lck, c_lck, &slot_hashes_data, data_len, round, 2);
+            c_hp = c_hp.saturating_sub(actual);
             if c_hp == 0 { break; }
-            d_hp = d_hp.saturating_sub(c_damage);
+            let actual = resolve_attack(c_damage, c_lck, d_lck, &slot_hashes_data, data_len, round, 0);
+            d_hp = d_hp.saturating_sub(actual);
             if d_hp == 0 { break; }
         }
     }
 
     let challenger_wins = if c_hp > 0 && d_hp > 0 {
         let tb = slot_hashes_data
-            .get((clock.unix_timestamp as usize) % slot_hashes_data.len().max(1))
+            .get((clock.unix_timestamp as usize) % data_len)
             .copied()
             .unwrap_or(0);
         tb % 2 == 0
@@ -171,21 +181,23 @@ pub fn handler(ctx: Context<AcceptChallenge>) -> Result<()> {
     };
 
     // Transfer winnings to the winner
-    token::transfer(
+    token_interface::transfer_checked(
         CpiContext::new_with_signer(
             ctx.accounts.token_program.to_account_info(),
-            Transfer {
+            TransferChecked {
                 from: ctx.accounts.treasury_token_account.to_account_info(),
+                mint: ctx.accounts.token_mint.to_account_info(),
                 to: winner_token_account,
                 authority: ctx.accounts.treasury.to_account_info(),
             },
             treasury_seeds,
         ),
         winnings,
+        TOKEN_DECIMALS,
     )?;
 
     // Burn the 2.5% arena fee permanently — reduces total supply
-    token::burn(
+    token_interface::burn(
         CpiContext::new_with_signer(
             ctx.accounts.token_program.to_account_info(),
             Burn {
@@ -237,4 +249,28 @@ pub fn handler(ctx: Context<AcceptChallenge>) -> Result<()> {
     challenge.is_active = false;
 
     Ok(())
+}
+
+fn resolve_attack(
+    base_damage: u64,
+    attacker_luck: u64,
+    defender_luck: u64,
+    slot_data: &[u8],
+    data_len: usize,
+    round: u64,
+    offset: u64,
+) -> u64 {
+    let dodge_idx = ((round * 4 + offset) as usize) % data_len;
+    let dodge_byte = slot_data.get(dodge_idx).copied().unwrap_or(0) as u64;
+    if dodge_byte < defender_luck.saturating_mul(4).min(200) {
+        return 0;
+    }
+
+    let crit_idx = ((round * 4 + offset + 1) as usize) % data_len;
+    let crit_byte = slot_data.get(crit_idx).copied().unwrap_or(255) as u64;
+    if crit_byte < attacker_luck.saturating_mul(5).min(200) {
+        return base_damage.saturating_mul(2);
+    }
+
+    base_damage
 }

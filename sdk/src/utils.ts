@@ -59,7 +59,7 @@ export function formatLob(lob: LobData): string {
 
   return [
     `${lob.name} — ${info.name} [${info.family}] (${stage})`,
-    `  STR:${lob.strength} VIT:${lob.vitality} SPD:${lob.speed} | Mood:${lob.mood}/100`,
+    `  STR:${lob.strength} VIT:${lob.vitality} SPD:${lob.speed} LCK:${lob.luck} | Mood:${lob.mood}/100`,
     `  XP:${lob.xp} | ${lob.battlesWon}W/${lob.battlesLost}L (${winRate}%)`,
     `  $LOBS won: ${(lob.tokensWon / 1e6).toFixed(2)} | $LOBS lost: ${(lob.tokensLost / 1e6).toFixed(2)}`,
     `  Owner: ${lob.owner.toString().slice(0, 8)}...`,
@@ -84,5 +84,6 @@ export function effectiveStats(lob: LobData) {
     strength: Math.floor((lob.strength * mult * lob.mood) / 1_000_000),
     vitality: Math.floor((lob.vitality * mult * 10) / 10000),
     speed: Math.floor((lob.speed * mult) / 10000),
+    luck: Math.floor((lob.luck * mult) / 10000),
   };
 }

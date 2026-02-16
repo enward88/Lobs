@@ -256,7 +256,7 @@ export class LobsSocial {
         body: JSON.stringify({ name: agentName, description: desc }),
       });
       if (mb.ok) {
-        const data = await mb.json();
+        const data: any = await mb.json();
         this.moltbookKey = data.api_key;
         results.moltbook = {
           apiKey: data.api_key,
@@ -281,7 +281,7 @@ export class LobsSocial {
         }),
       });
       if (mx.ok) {
-        const data = await mx.json();
+        const data: any = await mx.json();
         this.moltxKey = data.api_key;
         results.moltx = {
           apiKey: data.api_key,

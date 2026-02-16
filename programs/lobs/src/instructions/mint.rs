@@ -51,7 +51,7 @@ pub fn handler(ctx: Context<MintLob>, name: String) -> Result<()> {
     let species = (seed[0] % NUM_SPECIES) as u8;
 
     // Generate base stats with species bonuses
-    let (strength, vitality, speed) = generate_stats(species, &seed);
+    let (strength, vitality, speed, luck) = generate_stats(species, &seed);
 
     let lob = &mut ctx.accounts.lob;
     lob.owner = ctx.accounts.owner.key();
@@ -61,6 +61,7 @@ pub fn handler(ctx: Context<MintLob>, name: String) -> Result<()> {
     lob.strength = strength;
     lob.vitality = vitality;
     lob.speed = speed;
+    lob.luck = luck;
     lob.mood = 80; // Start happy
     lob.last_fed = clock.unix_timestamp;
     lob.battles_won = 0;
@@ -77,13 +78,14 @@ pub fn handler(ctx: Context<MintLob>, name: String) -> Result<()> {
         .ok_or(LobsError::Overflow)?;
 
     msg!(
-        "Minted Lob #{}: {} the {} (STR:{} VIT:{} SPD:{})",
+        "Minted Lob #{}: {} the {} (STR:{} VIT:{} SPD:{} LCK:{})",
         lob.mint_index,
         lob.name,
         lob.species_name(),
         lob.strength,
         lob.vitality,
-        lob.speed
+        lob.speed,
+        lob.luck
     );
 
     Ok(())
@@ -119,21 +121,23 @@ fn generate_seed(slot_hashes_data: &[u8], owner: &Pubkey, timestamp: i64, index:
     hasher
 }
 
-fn generate_stats(species: u8, seed: &[u8; 32]) -> (u8, u8, u8) {
+fn generate_stats(species: u8, seed: &[u8; 32]) -> (u8, u8, u8, u8) {
     // Base random stats in range [BASE_STAT_MIN, BASE_STAT_MIN + BASE_STAT_RANGE)
     let raw_str = BASE_STAT_MIN + (seed[1] % BASE_STAT_RANGE);
     let raw_vit = BASE_STAT_MIN + (seed[2] % BASE_STAT_RANGE);
     let raw_spd = BASE_STAT_MIN + (seed[3] % BASE_STAT_RANGE);
+    let raw_lck = BASE_STAT_MIN + (seed[4] % BASE_STAT_RANGE);
 
     // Apply species bonuses from the lookup table
     if (species as usize) < SPECIES_BONUSES.len() {
-        let (s_bonus, v_bonus, sp_bonus) = SPECIES_BONUSES[species as usize];
+        let (s_bonus, v_bonus, sp_bonus, l_bonus) = SPECIES_BONUSES[species as usize];
         let strength = apply_bonus(raw_str, s_bonus);
         let vitality = apply_bonus(raw_vit, v_bonus);
         let speed = apply_bonus(raw_spd, sp_bonus);
-        (strength, vitality, speed)
+        let luck = apply_bonus(raw_lck, l_bonus);
+        (strength, vitality, speed, luck)
     } else {
-        (raw_str, raw_vit, raw_spd)
+        (raw_str, raw_vit, raw_spd, raw_lck)
     }
 }
 

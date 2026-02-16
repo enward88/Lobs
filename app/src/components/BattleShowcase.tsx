@@ -14,8 +14,10 @@ interface BattleState {
   strB: number;
   spdA: number;
   spdB: number;
+  lckA: number;
+  lckB: number;
   turn: "a" | "b";
-  hits: { id: number; side: "a" | "b"; damage: number; time: number }[];
+  hits: { id: number; side: "a" | "b"; damage: number; crit: boolean; dodge: boolean; time: number }[];
   winner: "a" | "b" | null;
   round: number;
 }
@@ -48,6 +50,8 @@ function initBattle(): BattleState {
     strB: randomStat(5, 10),
     spdA: randomStat(5, 10),
     spdB: randomStat(5, 10),
+    lckA: randomStat(3, 12),
+    lckB: randomStat(3, 12),
     turn: "a",
     hits: [],
     winner: null,
@@ -89,9 +93,21 @@ export function BattleShowcase() {
 
           // Determine attacker
           const attacker = next.turn;
-          const damage = attacker === "a"
+          const attackerLck = attacker === "a" ? next.lckA : next.lckB;
+          const defenderLck = attacker === "a" ? next.lckB : next.lckA;
+          const baseDmg = attacker === "a"
             ? Math.max(1, next.strA + Math.floor(Math.random() * 4) - 1)
             : Math.max(1, next.strB + Math.floor(Math.random() * 4) - 1);
+
+          // Dodge check: defender luck * 1.5% chance
+          const dodgeRoll = Math.random() * 100;
+          const dodged = dodgeRoll < defenderLck * 1.5;
+
+          // Crit check: attacker luck * 2% chance
+          const critRoll = Math.random() * 100;
+          const critted = !dodged && critRoll < attackerLck * 2;
+
+          const damage = dodged ? 0 : critted ? baseDmg * 2 : baseDmg;
 
           if (attacker === "a") {
             next.hpB = Math.max(0, next.hpB - damage);
@@ -99,6 +115,8 @@ export function BattleShowcase() {
               id: ++hitIdRef.current,
               side: "b",
               damage,
+              crit: critted,
+              dodge: dodged,
               time: now,
             });
           } else {
@@ -107,6 +125,8 @@ export function BattleShowcase() {
               id: ++hitIdRef.current,
               side: "a",
               damage,
+              crit: critted,
+              dodge: dodged,
               time: now,
             });
           }
@@ -217,14 +237,14 @@ export function BattleShowcase() {
                   key={hit.id}
                   className="absolute left-1/2 font-mono font-bold text-lg pointer-events-none"
                   style={{
-                    color: colorB,
-                    textShadow: `0 0 10px ${colorB}`,
+                    color: hit.dodge ? "#888" : hit.crit ? "#ffcc00" : colorB,
+                    textShadow: `0 0 10px ${hit.dodge ? "#888" : hit.crit ? "#ffcc00" : colorB}`,
                     top: -10,
                     transform: "translateX(-50%)",
                     animation: "floatUp 1s ease-out forwards",
                   }}
                 >
-                  -{hit.damage}
+                  {hit.dodge ? "DODGE" : hit.crit ? `CRIT -${hit.damage}` : `-${hit.damage}`}
                 </div>
               ))}
           </div>
@@ -261,6 +281,7 @@ export function BattleShowcase() {
             <div className="flex justify-between text-[8px] text-abyss-600 font-mono mt-1">
               <span>STR {battle.strA}</span>
               <span>SPD {battle.spdA}</span>
+              <span>LCK {battle.lckA}</span>
             </div>
           </div>
         </div>
@@ -316,14 +337,14 @@ export function BattleShowcase() {
                   key={hit.id}
                   className="absolute left-1/2 font-mono font-bold text-lg pointer-events-none"
                   style={{
-                    color: colorA,
-                    textShadow: `0 0 10px ${colorA}`,
+                    color: hit.dodge ? "#888" : hit.crit ? "#ffcc00" : colorA,
+                    textShadow: `0 0 10px ${hit.dodge ? "#888" : hit.crit ? "#ffcc00" : colorA}`,
                     top: -10,
                     transform: "translateX(-50%)",
                     animation: "floatUp 1s ease-out forwards",
                   }}
                 >
-                  -{hit.damage}
+                  {hit.dodge ? "DODGE" : hit.crit ? `CRIT -${hit.damage}` : `-${hit.damage}`}
                 </div>
               ))}
           </div>
@@ -360,6 +381,7 @@ export function BattleShowcase() {
             <div className="flex justify-between text-[8px] text-abyss-600 font-mono mt-1">
               <span>STR {battle.strB}</span>
               <span>SPD {battle.spdB}</span>
+              <span>LCK {battle.lckB}</span>
             </div>
           </div>
         </div>
