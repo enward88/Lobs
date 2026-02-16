@@ -14,12 +14,19 @@ const AGENTS = {
   voidAgent: "2cFnH9bYkR5mXwT7jL3pKqV8gZaE6dU4sNxMhJ1tWoQi",
   tidalBot: "6wQzN3kYhR8mXcT5jL2pFqV7gZaE9dU4sKxBhJ1tMoAi",
   depthMiner: "3hTkW7nYgR2mXcB5jL8pKqV9fZaE6dU4sNxMhJ1tQoAi",
+  phantomFin: "8jRmL4sYkW6nXcB2fT9pKqV3gZaE7dU5tNxMhH1wQoCi",
+  abyssalHunter: "5kSnP2hYgR8mXcT4jL6pFqV9gZaE3dU7sKxBhJ1tAoWi",
+  coralWhisper: "1tXnM7sYkW4nRcB9jL3pKqV6gZaE8dU2fNxMhJ5wHoCi",
+  tideWarden: "6bVnK3sYhR9mXcT2jL8pFqW7gZaE5dU4tKxNmJ1wQiCo",
+  nightCrawler: "4pFnT8sYgR3mXcB6jL2pKqV9hZaE7dU1sNxMkJ5wHoCi",
+  deepOracle: "9wMnL5hYkR7mXcT3jL4pFqV2gZaE8dU6sKxBhJ1tQoCi",
 };
 
-// Timestamp base (roughly "a few weeks ago")
+// Timestamp base
 const NOW = Math.floor(Date.now() / 1000);
 const DAY = 86400;
 const HOUR = 3600;
+const MIN = 60;
 
 export const MOCK_BOTS: LobAccount[] = [
   // === deepSeeker's creatures (3 lobs, experienced player) ===
@@ -146,7 +153,7 @@ export const MOCK_BOTS: LobAccount[] = [
     tokensLost: 1600000,
   },
 
-  // === reefRunner's creatures (2 lobs, balanced) ===
+  // === reefRunner's creatures (3 lobs, balanced) ===
   {
     address: "BoT3cccc1111111111111111111111111111111111111",
     owner: AGENTS.reefRunner,
@@ -187,8 +194,28 @@ export const MOCK_BOTS: LobAccount[] = [
     tokensWon: 500000,
     tokensLost: 900000,
   },
+  {
+    address: "BoT3cccc3333333333333333333333333333333333333",
+    owner: AGENTS.reefRunner,
+    name: "Bloom-77",
+    species: 22, // Bloomsire (Flora)
+    xp: 310,
+    strength: 32,
+    vitality: 44,
+    speed: 28,
+    luck: 8,
+    mood: 84,
+    lastFed: NOW - HOUR * 4,
+    battlesWon: 12,
+    battlesLost: 6,
+    evolutionStage: 1, // Juvenile
+    isAlive: true,
+    mintIndex: 18,
+    tokensWon: 1800000,
+    tokensLost: 900000,
+  },
 
-  // === voidAgent's creatures (3 lobs, competitive) ===
+  // === voidAgent's creatures (4 lobs, competitive) ===
   {
     address: "BoT4dddd1111111111111111111111111111111111111",
     owner: AGENTS.voidAgent,
@@ -249,8 +276,28 @@ export const MOCK_BOTS: LobAccount[] = [
     tokensWon: 0,
     tokensLost: 0,
   },
+  {
+    address: "BoT4dddd4444444444444444444444444444444444444",
+    owner: AGENTS.voidAgent,
+    name: "Dread-IX",
+    species: 26, // Pressureking (Abyssal)
+    xp: 780,
+    strength: 36,
+    vitality: 46,
+    speed: 38,
+    luck: 10,
+    mood: 71,
+    lastFed: NOW - HOUR * 7,
+    battlesWon: 18,
+    battlesLost: 11,
+    evolutionStage: 2, // Adult
+    isAlive: true,
+    mintIndex: 16,
+    tokensWon: 3400000,
+    tokensLost: 2200000,
+  },
 
-  // === tidalBot's creatures (2 lobs, new player) ===
+  // === tidalBot's creatures (3 lobs) ===
   {
     address: "BoT5eeee1111111111111111111111111111111111111",
     owner: AGENTS.tidalBot,
@@ -291,8 +338,28 @@ export const MOCK_BOTS: LobAccount[] = [
     tokensWon: 0,
     tokensLost: 0,
   },
+  {
+    address: "BoT5eeee3333333333333333333333333333333333333",
+    owner: AGENTS.tidalBot,
+    name: "Surge-03",
+    species: 13, // Warbloom (Jellyfish)
+    xp: 420,
+    strength: 38,
+    vitality: 40,
+    speed: 30,
+    luck: 9,
+    mood: 76,
+    lastFed: NOW - HOUR * 5,
+    battlesWon: 13,
+    battlesLost: 8,
+    evolutionStage: 1, // Juvenile
+    isAlive: true,
+    mintIndex: 20,
+    tokensWon: 2400000,
+    tokensLost: 1800000,
+  },
 
-  // === depthMiner's creature (1 lob, just joined) ===
+  // === depthMiner's creatures (2 lobs) ===
   {
     address: "BoT6ffff1111111111111111111111111111111111111",
     owner: AGENTS.depthMiner,
@@ -310,6 +377,438 @@ export const MOCK_BOTS: LobAccount[] = [
     evolutionStage: 0, // Larva
     isAlive: true,
     mintIndex: 15,
+    tokensWon: 0,
+    tokensLost: 0,
+  },
+  {
+    address: "BoT6ffff2222222222222222222222222222222222222",
+    owner: AGENTS.depthMiner,
+    name: "Core-X4",
+    species: 4, // Boulderclaw (Crustacean)
+    xp: 95,
+    strength: 30,
+    vitality: 52,
+    speed: 16,
+    luck: 3,
+    mood: 68,
+    lastFed: NOW - HOUR * 12,
+    battlesWon: 4,
+    battlesLost: 3,
+    evolutionStage: 0, // Larva
+    isAlive: true,
+    mintIndex: 22,
+    tokensWon: 400000,
+    tokensLost: 300000,
+  },
+
+  // === phantomFin's creatures (4 lobs, luck specialist) ===
+  {
+    address: "BoT7gggg1111111111111111111111111111111111111",
+    owner: AGENTS.phantomFin,
+    name: "Ghost-v3",
+    species: 12, // Ghostveil (Jellyfish)
+    xp: 1600,
+    strength: 28,
+    vitality: 30,
+    speed: 54,
+    luck: 18,
+    mood: 90,
+    lastFed: NOW - MIN * 45,
+    battlesWon: 26,
+    battlesLost: 14,
+    evolutionStage: 2, // Adult
+    isAlive: true,
+    mintIndex: 13,
+    tokensWon: 5200000,
+    tokensLost: 2800000,
+  },
+  {
+    address: "BoT7gggg2222222222222222222222222222222222222",
+    owner: AGENTS.phantomFin,
+    name: "Haze-19",
+    species: 18, // Mirrorfin (Fish)
+    xp: 440,
+    strength: 24,
+    vitality: 34,
+    speed: 50,
+    luck: 15,
+    mood: 81,
+    lastFed: NOW - HOUR * 2,
+    battlesWon: 10,
+    battlesLost: 7,
+    evolutionStage: 1, // Juvenile
+    isAlive: true,
+    mintIndex: 19,
+    tokensWon: 1600000,
+    tokensLost: 1100000,
+  },
+  {
+    address: "BoT7gggg3333333333333333333333333333333333333",
+    owner: AGENTS.phantomFin,
+    name: "Wisp-K2",
+    species: 14, // Moonpulse (Jellyfish)
+    xp: 210,
+    strength: 30,
+    vitality: 32,
+    speed: 42,
+    luck: 13,
+    mood: 77,
+    lastFed: NOW - HOUR * 6,
+    battlesWon: 8,
+    battlesLost: 5,
+    evolutionStage: 1, // Juvenile
+    isAlive: true,
+    mintIndex: 24,
+    tokensWon: 900000,
+    tokensLost: 600000,
+  },
+  {
+    address: "BoT7gggg4444444444444444444444444444444444444",
+    owner: AGENTS.phantomFin,
+    name: "Shade-00",
+    species: 24, // Sporeling (Flora)
+    xp: 55,
+    strength: 26,
+    vitality: 38,
+    speed: 34,
+    luck: 12,
+    mood: 94,
+    lastFed: NOW - MIN * 30,
+    battlesWon: 3,
+    battlesLost: 2,
+    evolutionStage: 0, // Larva
+    isAlive: true,
+    mintIndex: 35,
+    tokensWon: 0,
+    tokensLost: 0,
+  },
+
+  // === abyssalHunter's creatures (3 lobs, power build) ===
+  {
+    address: "BoT8hhhh1111111111111111111111111111111111111",
+    owner: AGENTS.abyssalHunter,
+    name: "FANG-01",
+    species: 25, // Voidmaw (Abyssal)
+    xp: 2100,
+    strength: 56,
+    vitality: 36,
+    speed: 26,
+    luck: 10,
+    mood: 74,
+    lastFed: NOW - HOUR * 9,
+    battlesWon: 29,
+    battlesLost: 15,
+    evolutionStage: 3, // Elder
+    isAlive: true,
+    mintIndex: 17,
+    tokensWon: 9200000,
+    tokensLost: 4600000,
+  },
+  {
+    address: "BoT8hhhh2222222222222222222222222222222222222",
+    owner: AGENTS.abyssalHunter,
+    name: "Mauler-6",
+    species: 0, // Snapclaw (Crustacean)
+    xp: 580,
+    strength: 46,
+    vitality: 38,
+    speed: 22,
+    luck: 6,
+    mood: 62,
+    lastFed: NOW - HOUR * 16,
+    battlesWon: 15,
+    battlesLost: 10,
+    evolutionStage: 2, // Adult
+    isAlive: true,
+    mintIndex: 21,
+    tokensWon: 2800000,
+    tokensLost: 2200000,
+  },
+  {
+    address: "BoT8hhhh3333333333333333333333333333333333333",
+    owner: AGENTS.abyssalHunter,
+    name: "Render-3",
+    species: 9, // Venomcone (Mollusk)
+    xp: 170,
+    strength: 40,
+    vitality: 24,
+    speed: 32,
+    luck: 9,
+    mood: 83,
+    lastFed: NOW - HOUR * 3,
+    battlesWon: 6,
+    battlesLost: 4,
+    evolutionStage: 1, // Juvenile
+    isAlive: true,
+    mintIndex: 28,
+    tokensWon: 700000,
+    tokensLost: 500000,
+  },
+
+  // === coralWhisper's creatures (3 lobs, flora specialist) ===
+  {
+    address: "BoT9iiii1111111111111111111111111111111111111",
+    owner: AGENTS.coralWhisper,
+    name: "Tendril-K",
+    species: 23, // Tendrilwrap (Flora)
+    xp: 890,
+    strength: 22,
+    vitality: 50,
+    speed: 30,
+    luck: 11,
+    mood: 96,
+    lastFed: NOW - MIN * 20,
+    battlesWon: 19,
+    battlesLost: 12,
+    evolutionStage: 2, // Adult
+    isAlive: true,
+    mintIndex: 23,
+    tokensWon: 3800000,
+    tokensLost: 2400000,
+  },
+  {
+    address: "BoT9iiii2222222222222222222222222222222222222",
+    owner: AGENTS.coralWhisper,
+    name: "Spore-11",
+    species: 24, // Sporeling (Flora)
+    xp: 420,
+    strength: 28,
+    vitality: 42,
+    speed: 36,
+    luck: 14,
+    mood: 87,
+    lastFed: NOW - HOUR * 2,
+    battlesWon: 11,
+    battlesLost: 6,
+    evolutionStage: 1, // Juvenile
+    isAlive: true,
+    mintIndex: 26,
+    tokensWon: 1400000,
+    tokensLost: 700000,
+  },
+  {
+    address: "BoT9iiii3333333333333333333333333333333333333",
+    owner: AGENTS.coralWhisper,
+    name: "Reef-v7",
+    species: 20, // Reefling (Flora)
+    xp: 240,
+    strength: 32,
+    vitality: 36,
+    speed: 34,
+    luck: 8,
+    mood: 73,
+    lastFed: NOW - HOUR * 8,
+    battlesWon: 8,
+    battlesLost: 7,
+    evolutionStage: 1, // Juvenile
+    isAlive: true,
+    mintIndex: 30,
+    tokensWon: 600000,
+    tokensLost: 500000,
+  },
+
+  // === tideWarden's creatures (3 lobs, tank build) ===
+  {
+    address: "BoTAjjjj1111111111111111111111111111111111111",
+    owner: AGENTS.tideWarden,
+    name: "Bastion-1",
+    species: 4, // Boulderclaw (Crustacean)
+    xp: 1100,
+    strength: 34,
+    vitality: 58,
+    speed: 14,
+    luck: 3,
+    mood: 69,
+    lastFed: NOW - HOUR * 11,
+    battlesWon: 20,
+    battlesLost: 16,
+    evolutionStage: 2, // Adult
+    isAlive: true,
+    mintIndex: 25,
+    tokensWon: 4000000,
+    tokensLost: 3200000,
+  },
+  {
+    address: "BoTAjjjj2222222222222222222222222222222222222",
+    owner: AGENTS.tideWarden,
+    name: "Shell-09",
+    species: 19, // Stonescale (Fish)
+    xp: 330,
+    strength: 28,
+    vitality: 48,
+    speed: 22,
+    luck: 5,
+    mood: 79,
+    lastFed: NOW - HOUR * 5,
+    battlesWon: 10,
+    battlesLost: 8,
+    evolutionStage: 1, // Juvenile
+    isAlive: true,
+    mintIndex: 29,
+    tokensWon: 1200000,
+    tokensLost: 1000000,
+  },
+  {
+    address: "BoTAjjjj3333333333333333333333333333333333333",
+    owner: AGENTS.tideWarden,
+    name: "Fort-X2",
+    species: 27, // Darkdrifter (Abyssal)
+    xp: 150,
+    strength: 26,
+    vitality: 54,
+    speed: 20,
+    luck: 4,
+    mood: 88,
+    lastFed: NOW - HOUR * 3,
+    battlesWon: 5,
+    battlesLost: 3,
+    evolutionStage: 1, // Juvenile
+    isAlive: true,
+    mintIndex: 33,
+    tokensWon: 300000,
+    tokensLost: 200000,
+  },
+
+  // === nightCrawler's creatures (3 lobs, speed build) ===
+  {
+    address: "BoTBkkkk1111111111111111111111111111111111111",
+    owner: AGENTS.nightCrawler,
+    name: "Streak-7",
+    species: 1, // Tidecrawler (Crustacean)
+    xp: 680,
+    strength: 30,
+    vitality: 28,
+    speed: 56,
+    luck: 9,
+    mood: 80,
+    lastFed: NOW - HOUR * 4,
+    battlesWon: 17,
+    battlesLost: 11,
+    evolutionStage: 2, // Adult
+    isAlive: true,
+    mintIndex: 27,
+    tokensWon: 3200000,
+    tokensLost: 2000000,
+  },
+  {
+    address: "BoTBkkkk2222222222222222222222222222222222222",
+    owner: AGENTS.nightCrawler,
+    name: "Bolt-v4",
+    species: 16, // Flashfin (Fish)
+    xp: 390,
+    strength: 26,
+    vitality: 30,
+    speed: 52,
+    luck: 13,
+    mood: 86,
+    lastFed: NOW - HOUR * 2,
+    battlesWon: 12,
+    battlesLost: 7,
+    evolutionStage: 1, // Juvenile
+    isAlive: true,
+    mintIndex: 31,
+    tokensWon: 1800000,
+    tokensLost: 1000000,
+  },
+  {
+    address: "BoTBkkkk3333333333333333333333333333333333333",
+    owner: AGENTS.nightCrawler,
+    name: "Flicker-2",
+    species: 5, // Inkshade (Mollusk)
+    xp: 510,
+    strength: 34,
+    vitality: 32,
+    speed: 44,
+    luck: 12,
+    mood: 75,
+    lastFed: NOW - HOUR * 6,
+    battlesWon: 14,
+    battlesLost: 9,
+    evolutionStage: 2, // Adult
+    isAlive: true,
+    mintIndex: 32,
+    tokensWon: 2200000,
+    tokensLost: 1400000,
+  },
+
+  // === deepOracle's creatures (4 lobs, balanced + new mints) ===
+  {
+    address: "BoTCllll1111111111111111111111111111111111111",
+    owner: AGENTS.deepOracle,
+    name: "Oracle-P1",
+    species: 8, // Spiralhorn (Mollusk)
+    xp: 950,
+    strength: 26,
+    vitality: 40,
+    speed: 36,
+    luck: 14,
+    mood: 91,
+    lastFed: NOW - MIN * 15,
+    battlesWon: 21,
+    battlesLost: 10,
+    evolutionStage: 2, // Adult
+    isAlive: true,
+    mintIndex: 34,
+    tokensWon: 4200000,
+    tokensLost: 1800000,
+  },
+  {
+    address: "BoTCllll2222222222222222222222222222222222222",
+    owner: AGENTS.deepOracle,
+    name: "Seer-K8",
+    species: 29, // Depthcrown (Abyssal)
+    xp: 560,
+    strength: 50,
+    vitality: 38,
+    speed: 30,
+    luck: 10,
+    mood: 67,
+    lastFed: NOW - HOUR * 10,
+    battlesWon: 14,
+    battlesLost: 9,
+    evolutionStage: 2, // Adult
+    isAlive: true,
+    mintIndex: 36,
+    tokensWon: 2600000,
+    tokensLost: 1600000,
+  },
+  {
+    address: "BoTCllll3333333333333333333333333333333333333",
+    owner: AGENTS.deepOracle,
+    name: "Flux-v2",
+    species: 10, // Driftbloom (Jellyfish)
+    xp: 30,
+    strength: 20,
+    vitality: 26,
+    speed: 48,
+    luck: 15,
+    mood: 100,
+    lastFed: NOW - MIN * 5,
+    battlesWon: 1,
+    battlesLost: 1,
+    evolutionStage: 0, // Larva
+    isAlive: true,
+    mintIndex: 40,
+    tokensWon: 0,
+    tokensLost: 0,
+  },
+  {
+    address: "BoTCllll4444444444444444444444444444444444444",
+    owner: AGENTS.deepOracle,
+    name: "Prism-07",
+    species: 16, // Flashfin (Fish)
+    xp: 15,
+    strength: 22,
+    vitality: 28,
+    speed: 46,
+    luck: 11,
+    mood: 100,
+    lastFed: NOW - MIN * 2,
+    battlesWon: 0,
+    battlesLost: 0,
+    evolutionStage: 0, // Larva (brand new)
+    isAlive: true,
+    mintIndex: 42,
     tokensWon: 0,
     tokensLost: 0,
   },

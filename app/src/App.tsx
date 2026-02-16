@@ -239,6 +239,29 @@ function AllLobs() {
         >
           CA: 3xHvvEomh6jFDQ1WEqS3NzPwr7a5F11VASQy3eu1pump
         </p>
+
+        {/* Deploy Agent CTA */}
+        <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
+          <Link
+            to="/agent"
+            className="group relative px-8 py-3.5 rounded-2xl text-sm font-semibold tracking-wider uppercase transition-all duration-300"
+            style={{
+              background: "linear-gradient(135deg, rgba(0, 255, 213, 0.15), rgba(0, 170, 255, 0.15))",
+              border: "1px solid rgba(0, 255, 213, 0.3)",
+              color: "#00ffd5",
+              boxShadow: "0 0 25px rgba(0, 255, 213, 0.12), inset 0 1px 0 rgba(255,255,255,0.05)",
+            }}
+          >
+            <span className="relative z-10 flex items-center gap-2">
+              <span style={{ filter: "drop-shadow(0 0 6px rgba(0,255,213,0.4))" }}>&#x25C9;</span>
+              Deploy Your Agent
+              <span className="text-biolume-cyan/60 group-hover:translate-x-0.5 transition-transform">&rarr;</span>
+            </span>
+          </Link>
+          <span className="text-[10px] text-abyss-500 tracking-wider">
+            No code needed &middot; One click &middot; Watch it play
+          </span>
+        </div>
       </div>
 
       {/* Agent Quick Start */}
@@ -631,6 +654,8 @@ const TYPE_ICON_COMPACT: Record<string, string> = {
   battle: "\u2694",
   evolve: "\u2B06",
   wager: "\u25C8",
+  feed: "\u2665",
+  challenge: "\u2693",
 };
 
 const TYPE_LABEL_COMPACT: Record<string, string> = {
@@ -638,14 +663,24 @@ const TYPE_LABEL_COMPACT: Record<string, string> = {
   battle: "BATTLE",
   evolve: "EVOLVE",
   wager: "WAGER",
+  feed: "FEED",
+  challenge: "CHALLENGE",
 };
+
+function compactTimeAgo(minutes: number): string {
+  if (minutes < 1) return "now";
+  if (minutes < 60) return `${Math.floor(minutes)}m`;
+  const hours = minutes / 60;
+  if (hours < 24) return `${Math.floor(hours)}h`;
+  return `${Math.floor(hours / 24)}d`;
+}
 
 function CompactFeed() {
   const { lobs, loading } = useLobs();
 
   if (loading) return null;
 
-  const events = deriveActivity(lobs).slice(0, 6);
+  const events = deriveActivity(lobs).slice(0, 12);
   if (events.length === 0) return null;
 
   return (
@@ -654,6 +689,9 @@ function CompactFeed() {
         <div className="w-2 h-2 rounded-full bg-biolume-cyan animate-glow-pulse" />
         <span className="text-[10px] text-abyss-500 uppercase tracking-[0.2em] font-medium">
           Live Activity
+        </span>
+        <span className="text-[8px] text-abyss-600 font-mono ml-2">
+          {events.length} recent events
         </span>
       </div>
       <div className="rounded-2xl bg-abyss-900/30 border border-abyss-700/15 overflow-hidden glow-border">
@@ -671,7 +709,10 @@ function CompactFeed() {
               >
                 {TYPE_ICON_COMPACT[event.type]} {TYPE_LABEL_COMPACT[event.type]}
               </span>
-              <span className="text-xs text-white truncate">{event.text}</span>
+              <span className="text-xs text-white truncate flex-1">{event.text}</span>
+              <span className="text-[8px] text-abyss-600 font-mono flex-shrink-0">
+                {compactTimeAgo(event.timestamp)}
+              </span>
             </div>
           ))}
         </div>
@@ -679,7 +720,7 @@ function CompactFeed() {
           to="/live"
           className="block px-4 py-2.5 text-center text-[10px] text-biolume-cyan/60 hover:text-biolume-cyan tracking-wider uppercase border-t border-abyss-700/10 transition-colors duration-200"
         >
-          View all activity &rarr;
+          View all {deriveActivity(lobs).length} events &rarr;
         </Link>
       </div>
     </div>
