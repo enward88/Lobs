@@ -1,4 +1,4 @@
-import { CreatureArt } from "./CreatureArt";
+import { CreatureModel3D } from "./CreatureModel3D";
 
 export function Marketplace() {
   return (
@@ -6,9 +6,9 @@ export function Marketplace() {
       <div className="flex flex-col items-center justify-center py-16">
         {/* Creature art collage */}
         <div className="flex items-end gap-4 mb-8 opacity-60">
-          <CreatureArt species={25} size="sm" />
-          <CreatureArt species={12} size="lg" />
-          <CreatureArt species={3} size="sm" />
+          <CreatureModel3D species={25} size="sm" />
+          <CreatureModel3D species={12} size="lg" />
+          <CreatureModel3D species={3} size="sm" />
         </div>
 
         {/* Coming soon banner */}

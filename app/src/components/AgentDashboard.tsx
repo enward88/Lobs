@@ -5,7 +5,7 @@ import { PublicKey, LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { useAgentState } from "../hooks/useAgent";
 import { AgentSetup } from "./AgentSetup";
 import { AgentLog } from "./AgentLog";
-import { CreatureArt } from "./CreatureArt";
+import { CreatureModel3D } from "./CreatureModel3D";
 import { SPECIES_NAME, SPECIES_FAMILY, FAMILY_COLOR, STAGE_NAME } from "../lib/program";
 import { loadAgentConfig } from "../lib/agentKeypair";
 
@@ -246,7 +246,7 @@ export function AgentDashboard() {
                   const color = FAMILY_COLOR[family] || "#00ffd5";
                   return (
                     <div key={lob.address.toBase58()} className="flex items-start gap-5">
-                      <CreatureArt species={lob.species} size="sm" />
+                      <CreatureModel3D species={lob.species} size="sm" />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
                           <span className="text-white font-semibold">{lob.name}</span>

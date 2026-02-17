@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { CreatureArt } from "./CreatureArt";
+import { CreatureModel3D } from "./CreatureModel3D";
 import { SPECIES_NAME, SPECIES_FAMILY, FAMILY_COLOR } from "../lib/program";
 
 interface BattleState {
@@ -228,7 +228,7 @@ export function BattleShowcase() {
               transition: "transform 0.3s, opacity 0.3s",
             }}
           >
-            <CreatureArt species={battle.speciesA} size="lg" animate={false} />
+            <CreatureModel3D species={battle.speciesA} size="lg" animate={false} />
             {/* Damage numbers floating on A */}
             {battle.hits
               .filter((h) => h.side === "a")
@@ -329,7 +329,7 @@ export function BattleShowcase() {
               transition: "transform 0.3s, opacity 0.3s",
             }}
           >
-            <CreatureArt species={battle.speciesB} size="lg" animate={false} />
+            <CreatureModel3D species={battle.speciesB} size="lg" animate={false} />
             {battle.hits
               .filter((h) => h.side === "b")
               .map((hit) => (

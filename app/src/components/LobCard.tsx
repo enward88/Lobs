@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { LobAccount } from "../hooks/useLobs";
-import { CreatureArt } from "./CreatureArt";
+import { CreatureModel3D } from "./CreatureModel3D";
 import {
   SPECIES_NAME,
   SPECIES_FAMILY,
@@ -38,7 +38,7 @@ export function LobCard({ lob }: Props) {
       {/* Header: creature art + name */}
       <div className="flex items-start gap-4 mb-4">
         <div className="flex-shrink-0 opacity-80 group-hover:opacity-100 transition-opacity">
-          <CreatureArt species={lob.species} size="sm" animate={false} />
+          <CreatureModel3D species={lob.species} size="sm" animate={false} />
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">

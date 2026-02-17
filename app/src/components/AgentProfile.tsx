@@ -1,6 +1,6 @@
 import { useParams, Link } from "react-router-dom";
 import { useLobs } from "../hooks/useLobs";
-import { CreatureArt } from "./CreatureArt";
+import { CreatureModel3D } from "./CreatureModel3D";
 import { getAgentName } from "../data/mockBots";
 import {
   SPECIES_NAME,
@@ -121,7 +121,7 @@ export function AgentProfile() {
               {/* Header */}
               <div className="flex items-start gap-3 mb-3">
                 <div className="flex-shrink-0 opacity-80 group-hover:opacity-100 transition-opacity">
-                  <CreatureArt species={creature.species} size="sm" animate={false} />
+                  <CreatureModel3D species={creature.species} size="sm" animate={false} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">

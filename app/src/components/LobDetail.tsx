@@ -1,6 +1,6 @@
 import { useParams, Link } from "react-router-dom";
 import { useLobs } from "../hooks/useLobs";
-import { CreatureArt } from "./CreatureArt";
+import { CreatureModel3D } from "./CreatureModel3D";
 import {
   SPECIES_NAME,
   SPECIES_FAMILY,
@@ -67,7 +67,7 @@ export function LobDetail() {
       <div className="rounded-2xl bg-abyss-900/30 border border-abyss-700/15 p-6 mb-5 glow-border">
         <div className="flex items-start gap-6 mb-4">
           <div className="flex-shrink-0">
-            <CreatureArt species={lob.species} size="lg" />
+            <CreatureModel3D species={lob.species} size="lg" />
           </div>
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1">

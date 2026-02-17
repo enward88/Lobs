@@ -7,7 +7,8 @@ import { BattleLog } from "./components/BattleLog";
 import { LobDetail } from "./components/LobDetail";
 import { Armory } from "./components/Armory";
 import { AgentProfile } from "./components/AgentProfile";
-import { CreatureArt, CreatureDot } from "./components/CreatureArt";
+import { CreatureDot } from "./components/CreatureArt";
+import { CreatureModel3D } from "./components/CreatureModel3D";
 import { SPECIES_NAME, SPECIES_FAMILY, FAMILY_COLOR, STAGE_NAME } from "./lib/program";
 import { LiveFeed, EcosystemStats, deriveActivity } from "./components/LiveFeed";
 import { BattleShowcase } from "./components/BattleShowcase";
@@ -472,7 +473,7 @@ function AllLobs() {
             className="flex flex-col items-center gap-3 p-5 rounded-2xl bg-abyss-900/30 border border-abyss-700/15 hover-glow glow-border transition-all duration-300"
             style={{ animationDelay: `${i * 0.8}s` }}
           >
-            <CreatureArt species={fam.id} size="sm" />
+            <CreatureModel3D species={fam.id} size="sm" />
             <div className="text-center">
               <span className="text-[10px] text-abyss-300 tracking-wider uppercase font-medium block">
                 {fam.family}
@@ -850,7 +851,7 @@ function ArmoryBrowser() {
             >
               <div className="flex items-start gap-4 mb-3">
                 <div className="flex-shrink-0 opacity-80 group-hover:opacity-100 transition-opacity">
-                  <CreatureArt species={lob.species} size="sm" animate={false} />
+                  <CreatureModel3D species={lob.species} size="sm" animate={false} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className="font-semibold text-white truncate group-hover:text-biolume-cyan transition-colors">

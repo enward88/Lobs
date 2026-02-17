@@ -1,6 +1,6 @@
 import { useParams, Link } from "react-router-dom";
 import { useLobs } from "../hooks/useLobs";
-import { CreatureArt } from "./CreatureArt";
+import { CreatureModel3D } from "./CreatureModel3D";
 import { GearSlot } from "./GearSlot";
 import { getAgentName } from "../data/mockBots";
 import {
@@ -168,7 +168,7 @@ export function Armory() {
               boxShadow: `inset 0 0 40px ${familyColor}08, 0 0 20px ${familyColor}06`,
             }}
           >
-            <CreatureArt species={lob.species} size="lg" />
+            <CreatureModel3D species={lob.species} size="lg" />
           </div>
 
           {/* Right slots */}
@@ -434,7 +434,7 @@ export function Armory() {
                   className="group rounded-xl bg-abyss-800/20 border border-abyss-700/10 p-3 hover:bg-abyss-800/40 transition-all duration-200"
                 >
                   <div className="flex items-center gap-2 mb-2">
-                    <CreatureArt species={sib.species} size="sm" animate={false} />
+                    <CreatureModel3D species={sib.species} size="sm" animate={false} />
                     <div className="min-w-0">
                       <div className="text-xs text-white font-semibold truncate group-hover:text-biolume-cyan transition-colors">
                         {sib.name}

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { CreatureArt } from "./CreatureArt";
+import { CreatureModel3D } from "./CreatureModel3D";
 import { SPECIES_NAME, SPECIES_FAMILY, FAMILY_COLOR, SPECIES_TRAIT } from "../lib/program";
 
 interface SpeciesData {
@@ -134,7 +134,7 @@ function SpeciesCard({ species, expanded, onToggle }: { species: SpeciesData; ex
     >
       <div className="p-5 flex items-start gap-4">
         <div className="flex-shrink-0">
-          <CreatureArt species={species.id} size="sm" animate={expanded} />
+          <CreatureModel3D species={species.id} size="sm" animate={expanded} />
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
