@@ -1,6 +1,7 @@
 import { useParams, Link } from "react-router-dom";
 import { useLobs } from "../hooks/useLobs";
 import { CreatureArt } from "./CreatureArt";
+import { getAgentName } from "../data/mockBots";
 import {
   SPECIES_NAME,
   SPECIES_FAMILY,
@@ -62,13 +63,19 @@ export function AgentProfile() {
 
       {/* Agent header */}
       <div className="rounded-2xl bg-abyss-900/30 border border-abyss-700/15 p-5 mb-6 glow-border">
-        <div className="flex items-center gap-2 mb-3">
+        <div className="flex items-center gap-2 mb-2">
           <div className="w-2 h-2 rounded-full bg-biolume-cyan animate-glow-pulse" />
           <span className="text-[10px] text-abyss-500 uppercase tracking-[0.2em] font-medium">
             Agent Profile
           </span>
         </div>
-        <p className="font-mono text-sm text-abyss-200 break-all mb-4">{owner}</p>
+        {(() => {
+          const name = getAgentName(owner || "");
+          return name ? (
+            <h1 className="text-2xl font-bold text-biolume-cyan mb-1">{name}</h1>
+          ) : null;
+        })()}
+        <p className="font-mono text-[10px] text-abyss-400 break-all mb-4">{owner}</p>
 
         {/* Aggregate stats */}
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">

@@ -2,6 +2,7 @@ import { useParams, Link } from "react-router-dom";
 import { useLobs } from "../hooks/useLobs";
 import { CreatureArt } from "./CreatureArt";
 import { GearSlot } from "./GearSlot";
+import { getAgentName } from "../data/mockBots";
 import {
   SPECIES_NAME,
   SPECIES_FAMILY,
@@ -47,6 +48,7 @@ export function Armory() {
   }
 
   const gear: CreatureGear = getCreatureGear(lob.address);
+  const agentName = getAgentName(lob.owner);
   const family = SPECIES_FAMILY[lob.species] || "Unknown";
   const familyColor = FAMILY_COLOR[family] || "#666";
   const speciesName = SPECIES_NAME[lob.species] || "Unknown";
@@ -101,6 +103,14 @@ export function Armory() {
               </span>
             )}
           </div>
+          {agentName && (
+            <Link
+              to={`/agent-profile/${lob.owner}`}
+              className="text-[11px] text-biolume-cyan/70 hover:text-biolume-cyan transition-colors tracking-wider mt-0.5 inline-block"
+            >
+              owned by {agentName}
+            </Link>
+          )}
           <div className="flex items-center gap-2 mt-1">
             <span className="w-2 h-2 rounded-full" style={{ backgroundColor: familyColor }} />
             <span className="text-sm text-abyss-300">
@@ -375,7 +385,15 @@ export function Armory() {
         </h2>
         <div className="flex items-center justify-between">
           <div>
-            <p className="font-mono text-xs text-abyss-300 break-all">{lob.owner}</p>
+            {agentName && (
+              <Link
+                to={`/agent-profile/${lob.owner}`}
+                className="text-sm font-semibold text-biolume-cyan hover:text-white transition-colors"
+              >
+                {agentName}
+              </Link>
+            )}
+            <p className="font-mono text-[10px] text-abyss-400 break-all mt-0.5">{lob.owner}</p>
             <p className="text-[10px] text-abyss-600 mt-1 font-mono">
               Lob #{lob.mintIndex} &middot; {siblings.length + 1} creatures owned
             </p>

@@ -17,6 +17,7 @@ import { Marketplace } from "./components/Marketplace";
 import { Social } from "./components/Social";
 import { AgentDashboard } from "./components/AgentDashboard";
 import { getCreatureGear, gearScore, gearScoreLabel } from "./lib/gear";
+import { getAgentName, AGENTS } from "./data/mockBots";
 
 /** Floating ambient particles */
 function Particles() {
@@ -734,6 +735,7 @@ function CompactFeed() {
 
 function ArmoryBrowser() {
   const { lobs, loading } = useLobs();
+  const [agentFilter, setAgentFilter] = useState<string | null>(null);
 
   if (loading) {
     return (
@@ -744,16 +746,25 @@ function ArmoryBrowser() {
     );
   }
 
-  // Sort by gear score descending
-  const sorted = [...lobs].sort((a, b) => {
+  // Build unique agent list from actual creatures
+  const agentAddresses = [...new Set(lobs.map((l) => l.owner))];
+  const agents = agentAddresses
+    .map((addr) => ({ addr, name: getAgentName(addr) || addr.slice(0, 8) + "..." }))
+    .sort((a, b) => a.name.localeCompare(b.name));
+
+  // Filter then sort by gear score descending
+  const filtered = agentFilter ? lobs.filter((l) => l.owner === agentFilter) : lobs;
+  const sorted = [...filtered].sort((a, b) => {
     const sa = gearScore(getCreatureGear(a.address));
     const sb = gearScore(getCreatureGear(b.address));
     return sb - sa;
   });
 
+  const selectedAgentName = agentFilter ? (getAgentName(agentFilter) || agentFilter.slice(0, 8)) : null;
+
   return (
     <div>
-      <div className="text-center mb-10">
+      <div className="text-center mb-8">
         <h1
           className="text-3xl sm:text-4xl font-bold tracking-tight mb-2"
           style={{
@@ -768,10 +779,66 @@ function ArmoryBrowser() {
           Inspect any creature &middot; View gear &middot; Compare builds
         </p>
       </div>
+
+      {/* Agent filter tabs */}
+      <div className="mb-6">
+        <div className="flex items-center gap-2 mb-3">
+          <span className="text-[10px] text-abyss-500 uppercase tracking-wider font-medium">Filter by Agent</span>
+          <span className="text-[9px] text-abyss-600 font-mono">{agents.length} agents</span>
+        </div>
+        <div className="flex flex-wrap gap-1.5">
+          <button
+            onClick={() => setAgentFilter(null)}
+            className="px-3 py-1.5 rounded-full text-[10px] font-medium tracking-wide transition-all duration-200"
+            style={{
+              backgroundColor: !agentFilter ? "rgba(0, 255, 213, 0.15)" : "rgba(15, 23, 42, 0.4)",
+              border: `1px solid ${!agentFilter ? "rgba(0, 255, 213, 0.3)" : "rgba(100, 116, 139, 0.15)"}`,
+              color: !agentFilter ? "#00ffd5" : "#64748b",
+            }}
+          >
+            All ({lobs.length})
+          </button>
+          {agents.map((agent) => {
+            const count = lobs.filter((l) => l.owner === agent.addr).length;
+            const active = agentFilter === agent.addr;
+            return (
+              <button
+                key={agent.addr}
+                onClick={() => setAgentFilter(active ? null : agent.addr)}
+                className="px-3 py-1.5 rounded-full text-[10px] font-medium tracking-wide transition-all duration-200"
+                style={{
+                  backgroundColor: active ? "rgba(0, 255, 213, 0.15)" : "rgba(15, 23, 42, 0.4)",
+                  border: `1px solid ${active ? "rgba(0, 255, 213, 0.3)" : "rgba(100, 116, 139, 0.15)"}`,
+                  color: active ? "#00ffd5" : "#94a3b8",
+                }}
+              >
+                {agent.name} ({count})
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Active filter label */}
+      {selectedAgentName && (
+        <div className="flex items-center gap-2 mb-4">
+          <span className="text-[10px] text-abyss-400">
+            Showing <span className="text-biolume-cyan font-semibold">{selectedAgentName}</span>'s {sorted.length} creature{sorted.length !== 1 ? "s" : ""}
+          </span>
+          <Link
+            to={`/agent-profile/${agentFilter}`}
+            className="text-[9px] text-biolume-cyan/60 hover:text-biolume-cyan tracking-wider uppercase transition-colors ml-2"
+          >
+            Full profile &rarr;
+          </Link>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
         {sorted.map((lob) => {
           const score = gearScore(getCreatureGear(lob.address));
           const scoreInfo = gearScoreLabel(score);
+          const ownerName = getAgentName(lob.owner);
           return (
             <Link
               key={lob.address}
@@ -786,6 +853,11 @@ function ArmoryBrowser() {
                   <h3 className="font-semibold text-white truncate group-hover:text-biolume-cyan transition-colors">
                     {lob.name}
                   </h3>
+                  {ownerName && (
+                    <p className="text-[9px] text-biolume-cyan/50 mt-0.5">
+                      {ownerName}
+                    </p>
+                  )}
                   <p className="text-[10px] text-abyss-400 mt-0.5">
                     {SPECIES_NAME[lob.species]}
                     <span className="text-abyss-600 mx-1">/</span>

@@ -7,7 +7,7 @@ import { LobAccount } from "../hooks/useLobs";
  */
 
 // Fake agent wallet addresses (look like real base58 Solana pubkeys)
-const AGENTS = {
+export const AGENTS = {
   deepSeeker: "7xKp3RqVnF8dMcJZb4uWgE9HtY2sNaQ6jL5vCmA1XwTf",
   abyssTrader: "4mNrT8vXhP2kWqL6gY5cJfD3sZaE7bR9uHxMnK1wQoCi",
   reefRunner: "9pLkS5hYgW3nXcB7jM2vRqT8dZaF6eU4tKxNmJ1wHoAi",
@@ -813,3 +813,13 @@ export const MOCK_BOTS: LobAccount[] = [
     tokensLost: 0,
   },
 ];
+
+/** Reverse-lookup: wallet address → agent display name */
+const AGENT_NAME_MAP: Record<string, string> = Object.fromEntries(
+  Object.entries(AGENTS).map(([name, addr]) => [addr, name])
+);
+
+/** Get human-readable agent name from wallet address */
+export function getAgentName(ownerAddress: string): string | null {
+  return AGENT_NAME_MAP[ownerAddress] || null;
+}
