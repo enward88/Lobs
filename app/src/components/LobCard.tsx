@@ -32,7 +32,7 @@ export function LobCard({ lob }: Props) {
 
   return (
     <Link
-      to={`/lob/${lob.address}`}
+      to={`/armory/${lob.address}`}
       className="group block rounded-2xl bg-abyss-900/30 border border-abyss-700/15 p-5 hover-glow glow-border transition-all duration-300 hover:bg-abyss-900/50"
     >
       {/* Header: creature art + name */}

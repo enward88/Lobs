@@ -5,7 +5,10 @@ import { LobCard } from "./components/LobCard";
 import { Leaderboard } from "./components/Leaderboard";
 import { BattleLog } from "./components/BattleLog";
 import { LobDetail } from "./components/LobDetail";
+import { Armory } from "./components/Armory";
+import { AgentProfile } from "./components/AgentProfile";
 import { CreatureArt, CreatureDot } from "./components/CreatureArt";
+import { SPECIES_NAME, SPECIES_FAMILY, FAMILY_COLOR, STAGE_NAME } from "./lib/program";
 import { LiveFeed, EcosystemStats, deriveActivity } from "./components/LiveFeed";
 import { BattleShowcase } from "./components/BattleShowcase";
 import { FAQ } from "./components/FAQ";
@@ -13,6 +16,7 @@ import { Creatures } from "./components/Creatures";
 import { Marketplace } from "./components/Marketplace";
 import { Social } from "./components/Social";
 import { AgentDashboard } from "./components/AgentDashboard";
+import { getCreatureGear, gearScore, gearScoreLabel } from "./lib/gear";
 
 /** Floating ambient particles */
 function Particles() {
@@ -64,6 +68,7 @@ function Nav() {
     { to: "/live", label: "Live" },
     { to: "/social", label: "Social" },
     { to: "/marketplace", label: "Market" },
+    { to: "/armory", label: "Armory" },
     { to: "/agent", label: "Agent" },
     { to: "/leaderboard", label: "Rankings" },
     { to: "/battles", label: "Arena" },
@@ -727,6 +732,95 @@ function CompactFeed() {
   );
 }
 
+function ArmoryBrowser() {
+  const { lobs, loading } = useLobs();
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center py-32">
+        <div className="w-12 h-12 rounded-full border-2 border-abyss-700/30 border-t-biolume-cyan/60 animate-spin" />
+        <p className="text-abyss-500 text-xs mt-4 tracking-wider uppercase">Loading armory...</p>
+      </div>
+    );
+  }
+
+  // Sort by gear score descending
+  const sorted = [...lobs].sort((a, b) => {
+    const sa = gearScore(getCreatureGear(a.address));
+    const sb = gearScore(getCreatureGear(b.address));
+    return sb - sa;
+  });
+
+  return (
+    <div>
+      <div className="text-center mb-10">
+        <h1
+          className="text-3xl sm:text-4xl font-bold tracking-tight mb-2"
+          style={{
+            background: "linear-gradient(135deg, #ffcc00, #ff00aa, #aa55ff)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+          }}
+        >
+          Armory
+        </h1>
+        <p className="text-abyss-400 text-sm tracking-wider">
+          Inspect any creature &middot; View gear &middot; Compare builds
+        </p>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        {sorted.map((lob) => {
+          const score = gearScore(getCreatureGear(lob.address));
+          const scoreInfo = gearScoreLabel(score);
+          return (
+            <Link
+              key={lob.address}
+              to={`/armory/${lob.address}`}
+              className="group block rounded-2xl bg-abyss-900/30 border border-abyss-700/15 p-5 hover-glow glow-border transition-all duration-300 hover:bg-abyss-900/50"
+            >
+              <div className="flex items-start gap-4 mb-3">
+                <div className="flex-shrink-0 opacity-80 group-hover:opacity-100 transition-opacity">
+                  <CreatureArt species={lob.species} size="sm" animate={false} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-white truncate group-hover:text-biolume-cyan transition-colors">
+                    {lob.name}
+                  </h3>
+                  <p className="text-[10px] text-abyss-400 mt-0.5">
+                    {SPECIES_NAME[lob.species]}
+                    <span className="text-abyss-600 mx-1">/</span>
+                    <span style={{ color: FAMILY_COLOR[SPECIES_FAMILY[lob.species]] || "#666" }}>
+                      {SPECIES_FAMILY[lob.species]}
+                    </span>
+                    <span className="text-abyss-600 mx-1">/</span>
+                    {STAGE_NAME[lob.evolutionStage]}
+                  </p>
+                </div>
+                {score > 0 && (
+                  <div className="text-right flex-shrink-0">
+                    <div className="text-sm font-bold font-mono" style={{ color: scoreInfo.color }}>
+                      {score}
+                    </div>
+                    <div className="text-[8px] text-abyss-500 uppercase tracking-wider">GS</div>
+                  </div>
+                )}
+              </div>
+              <div className="flex items-center justify-between text-[9px] text-abyss-500 font-mono">
+                <span>
+                  {lob.battlesWon}W {lob.battlesLost}L
+                </span>
+                <span className="text-biolume-cyan/50 group-hover:text-biolume-cyan transition-colors">
+                  Inspect &rarr;
+                </span>
+              </div>
+            </Link>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
   return (
     <div className="min-h-screen relative">
@@ -744,6 +838,9 @@ export default function App() {
             <Route path="/leaderboard" element={<Leaderboard />} />
             <Route path="/battles" element={<BattleLog />} />
             <Route path="/lob/:address" element={<LobDetail />} />
+            <Route path="/armory" element={<ArmoryBrowser />} />
+            <Route path="/armory/:address" element={<Armory />} />
+            <Route path="/agent-profile/:owner" element={<AgentProfile />} />
           </Routes>
         </main>
         <footer className="border-t border-abyss-700/15 py-8 text-center">
