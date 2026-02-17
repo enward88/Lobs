@@ -4,6 +4,7 @@ import { useLobs } from "../hooks/useLobs";
 import { CreatureDot } from "./CreatureArt";
 import { getGearById, RARITY_CONFIG, GearItem } from "../lib/gear";
 import { FAMILY_COLOR } from "../lib/program";
+import { BossModel3D } from "./BossModel3D";
 import {
   getBossById,
   TIER_CONFIG,
@@ -68,14 +69,9 @@ export function RaidBoss() {
       {/* ═══ Boss Header ═══ */}
       <div className="rounded-2xl bg-abyss-900/30 border border-abyss-700/15 p-6 mb-5 glow-border">
         <div className="flex flex-col sm:flex-row items-start gap-5">
-          {/* ASCII art */}
+          {/* 3D Boss Model */}
           <div className="flex-shrink-0">
-            <pre
-              className="text-[10px] sm:text-xs leading-[1.15] font-mono"
-              style={{ color: tier.color, textShadow: `0 0 12px ${tier.color}44` }}
-            >
-              {boss.asciiArt}
-            </pre>
+            <BossModel3D bossId={boss.id} size="lg" />
           </div>
 
           <div className="flex-1">

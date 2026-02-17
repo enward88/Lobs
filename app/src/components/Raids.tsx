@@ -4,6 +4,7 @@ import { useLobs } from "../hooks/useLobs";
 import { CreatureDot } from "./CreatureArt";
 import { SPECIES_NAME } from "../lib/program";
 import { getGearById, RARITY_CONFIG } from "../lib/gear";
+import { BossModel3D } from "./BossModel3D";
 import {
   RAID_BOSSES,
   TIER_CONFIG,
@@ -183,14 +184,9 @@ function BossCard({ boss, history }: { boss: RaidBoss; history: RaidResult[] }) 
       className="group block rounded-2xl bg-abyss-900/30 border border-abyss-700/15 p-5 hover-glow glow-border transition-all duration-300 hover:bg-abyss-900/50"
     >
       <div className="flex items-start gap-4 mb-3">
-        {/* Boss ASCII art */}
-        <div className="flex-shrink-0">
-          <pre
-            className="text-[7px] leading-[1.1] font-mono opacity-60 group-hover:opacity-100 transition-opacity"
-            style={{ color: tier.color }}
-          >
-            {boss.asciiArt}
-          </pre>
+        {/* Boss 3D model */}
+        <div className="flex-shrink-0 opacity-80 group-hover:opacity-100 transition-opacity">
+          <BossModel3D bossId={boss.id} size="sm" />
         </div>
 
         <div className="flex-1 min-w-0">
