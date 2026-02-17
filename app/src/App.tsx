@@ -18,6 +18,8 @@ import { Social } from "./components/Social";
 import { AgentDashboard } from "./components/AgentDashboard";
 import { getCreatureGear, gearScore, gearScoreLabel } from "./lib/gear";
 import { getAgentName, AGENTS } from "./data/mockBots";
+import { Raids } from "./components/Raids";
+import { RaidBoss } from "./components/RaidBoss";
 
 /** Floating ambient particles */
 function Particles() {
@@ -70,6 +72,7 @@ function Nav() {
     { to: "/social", label: "Social" },
     { to: "/marketplace", label: "Market" },
     { to: "/armory", label: "Armory" },
+    { to: "/raids", label: "Raids" },
     { to: "/agent", label: "Agent" },
     { to: "/leaderboard", label: "Rankings" },
     { to: "/battles", label: "Arena" },
@@ -912,6 +915,8 @@ export default function App() {
             <Route path="/lob/:address" element={<LobDetail />} />
             <Route path="/armory" element={<ArmoryBrowser />} />
             <Route path="/armory/:address" element={<Armory />} />
+            <Route path="/raids" element={<Raids />} />
+            <Route path="/raids/:bossId" element={<RaidBoss />} />
             <Route path="/agent-profile/:owner" element={<AgentProfile />} />
           </Routes>
         </main>
